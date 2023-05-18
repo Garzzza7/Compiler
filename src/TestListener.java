@@ -97,6 +97,16 @@ public interface TestListener extends ParseTreeListener {
 	 */
 	void exitViewStatement(TestParser.ViewStatementContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link TestParser#placeAssignment}.
+	 * @param ctx the parse tree
+	 */
+	void enterPlaceAssignment(TestParser.PlaceAssignmentContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link TestParser#placeAssignment}.
+	 * @param ctx the parse tree
+	 */
+	void exitPlaceAssignment(TestParser.PlaceAssignmentContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link TestParser#pointAssignment}.
 	 * @param ctx the parse tree
 	 */

@@ -46,13 +46,16 @@ view:
     'view' ID 'of' ID '<<<' /*NEWLINE*/ viewStatement* /*NEWLINE*/ '>>>'
 ;
 viewStatement:
-    'place' ID 'at' '(' INTEGER ',' INTEGER ')' (',' ID 'at' '(' INTEGER ',' INTEGER ')')* ';'
-    | 'point' ID ';'
-    | ID '=' '(' ID ')' ';'
-    | 'point' ID '=' '(' (INTEGER|FLOAT) ':' (INTEGER|FLOAT) ')' ';'
-    | pointAssignment
-    | expression
-    | '<' ID ',' ID '>' 'as' ID ('--' ID)* ';'
+    'place'  placeAssignment(', ' placeAssignment)* ';'
+//    | 'point' ID ';'
+//    | ID '=' '(' ID ')' ';'
+//    | 'point' ID '=' '(' (INTEGER|FLOAT) ':' (INTEGER|FLOAT) ')' ';'
+//    | pointAssignment
+//    | expression
+//    | '<' ID ',' ID '>' 'as' ID ('--' ID)* ';'
+;
+placeAssignment:
+    ID 'at' '('INTEGER ', ' INTEGER')'
 ;
 pointAssignment:
 //        'point' expression ';'
@@ -81,8 +84,8 @@ on:
     'on' ID '<<<' onStatement* '>>>'
 ;
 onStatement:
-
-    'show' ((ID | ID '[' ('initial'|'accepting') '=' ('false'|'true')) ']') (','(ID | ID '[' ('initial'|'accepting') '=' ('false'|'true')) ']')*
+   // (ID) | (ID '[' ('initial'|'accepting') '=' ('false'|'true')) ']')
+    'show' (((ID) | (ID '[' ('initial'|'accepting') '=' ('false'|'true')) ']')) (', '(((ID) | (ID '[' ('initial'|'accepting') '=' ('false'|'true')) ']')))* ';'
 //    'show' ID ('[' ('initial'|'accepting') '=' ('false'|'true') ']') ';'
     | 'pause' ';'
     | 'show' '<' ID ',' ID '>' ';'
@@ -128,7 +131,7 @@ INTEGER:[0-9]+;
 //EqualsSign:'=';
 //INITIAL:'initial';
 //ACCEPTING:'accepting';
-//STATE:'state';
+//STATE:'state';q
 
 //FunctionName:[a-z]+[1-9];
 //StateName:[A-Z];
