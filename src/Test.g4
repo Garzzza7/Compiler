@@ -10,6 +10,7 @@ sector:
     ;
 alphabet:
     'alphabet'  '{' '\''ID'\''(', ' '\''ID'\'')* '}'
+
     ;
 automaton:
     automatonType ID '<<<'
@@ -22,9 +23,15 @@ automatonStatement:
      | ID '[' ('initial'|'accepting') '=' ('false'|'true') ']' ';'
      | transition
 ;
+foreach:
+    'for' ID 'in' '{{'ID (', 'ID)* '}}' '<<<' foreachStatement '>>>'
+;
+foreachStatement:
+
+;
 transition:
-      'transition' //NEWLINE
-        (ID '->' '\'' ID '\'' (',' '\'' ID '\'')* '->' ID ',' /*NEWLINE*/)*
+      'transition'
+        (ID '->' '\'' ID '\'' (',' '\'' ID '\'')* '->' ID ',' )*
          ID '->' '\'' ID '\'' (',' '\'' ID '\'')* '->' ID ';'
 ;
 automatonType:
@@ -37,36 +44,48 @@ view:
 ;
 viewStatement:
     'place'  placeAssignment(', ' placeAssignment)* ';'
+    | 'point' ID ';'
+    | ID '=' '(' ID ')' ';'
+    | 'point'? ID '=' expression ';'
+    | pointAssignment
+    | expression
+    | '<' ID ',' ID '>' 'as' ID ('--' ID)* ';'
+    | 'place' '<' ID ',' ID '>' '#label' '[''align' '=' 'below'']' 'at' ID';'
 ;
 placeAssignment:
-    ID 'at' '('INTEGER ', ' INTEGER')'
+    ID 'at' '(' expression ',' expression')'
 ;
 pointAssignment:
+//        'point' expression ';'
          expression '=' '(' ID ')' ';'
         | 'point' expression '=' expression ';'
 ;
 expression:
      ID
     | '(' expression ':' expression ')'
+    | '(' expression ',' expression ')'
+    | '(' expression ';' expression ')'
     | INTEGER
     | FLOAT
     | '-' expression
+    | '('expression')'
     | expression op=('+' | '-' | '/' | '*' | '=') expression
 
 ;
 animation:
-    'animation' ID '<<<' animationStatement* '>>>'
+    'animation' ID '<<<'  animationStatement*  '>>>'
 ;
 animationStatement:
     viewport on
 ;
 viewport:
-    'viewport' ID 'for' ID 'at' '(' INTEGER ',' INTEGER ')' '--' '++' '(' INTEGER ',' INTEGER ')' ';'
+    'viewport' ID 'for' ID 'at' '(' expression ',' expression ')' '--' '++' '(' expression ',' expression ')' ';'
 ;
 on:
     'on' ID '<<<' onStatement* '>>>'
 ;
 onStatement:
+   // (ID) | (ID '[' ('initial'|'accepting') '=' ('false'|'true')) ']')
     'show' (((ID) | (ID '[' ('initial'|'accepting') '=' ('false'|'true')) ']')) (', '(((ID) | (ID '[' ('initial'|'accepting') '=' ('false'|'true')) ']')))* ';'
     | 'pause' ';'
     | 'show' '<' ID ',' ID '>' ';'
@@ -74,10 +93,10 @@ onStatement:
 play:
     'play' ID ';'
 ;
-ID: ([a-zA-Z]|[0-9]|'_')+;
-FLOAT:[0-9]+'.'[0-9]*;
 
 INTEGER:[0-9]+;
+ID: ([a-zA-Z]|[0-9]|'_')+;
+FLOAT:[0-9]+'.'[0-9]*;
 
 WS: [ \n\r\t]+ -> skip;
 COMMENT: '//' ~[\r\n]* -> skip;
