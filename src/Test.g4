@@ -24,15 +24,10 @@ automatonStatement:
      'state' ID(', 'ID)*';'
      | ID '[' ('initial'|'accepting') '=' ('false'|'true') ']' ';'
      | transition
+     | foreach
      ;
 
-foreach:
-    'for' ID 'in' '{{'ID (', 'ID)* '}}' '<<<' foreachStatement '>>>'
-    ;
 
-foreachStatement:
-
-    ;
 
 transition:
       'transition'
@@ -52,15 +47,39 @@ view:
 
 viewStatement:
     'place'  placeAssignment(', ' placeAssignment)* ';'
-    | 'point' ID ';'
+    | 'point' ID (', ' ID)* ';'
     | ID '=' '(' ID ')' ';'
     | 'point'? ID '=' expression ';'
     | pointAssignment
     | expression
     | '<' ID ',' ID '>' 'as' ID ('--' ID)* ';'
-    | 'place' '<' ID ',' ID '>' '#label' '[''align' '=' 'below'']' 'at' ID';'
+    | 'place' '<' ID ',' ID '>' '#label' '[''align' '=' align ']' 'at' ID';'
+    | '<' ID ',' ID '>' '#label' '[''align' '=' align ']' ';'
+    | 'grid' expression '(' expression ',' expression')' '[' (gridStatement ', ')* gridStatement']' ';'
     ;
-
+align:
+    'below'
+    | 'above'
+    | 'below left'
+    | 'below right'
+    | 'right'
+    | 'left'
+;
+gridStatement:
+    'step' '=' expression
+    | 'margin' '=' expression
+    | 'color' '=' color
+    | 'line' '=' line
+;
+color:
+    'gray'
+    | 'red'
+    | 'green'
+    | 'blue'
+;
+line:
+    'solid'
+;
 placeAssignment:
     ID 'at' '(' expression ',' expression')'
     ;
@@ -83,11 +102,12 @@ expression:
     ;
 
 animation:
-    'animation' ID '<<<'  animationStatement*  '>>>'
+    'animation' ID '<<<'  animationStatement  '>>>'
     ;
 
 animationStatement:
-    viewport on
+    viewport
+    on
     ;
 
 viewport:
@@ -99,11 +119,20 @@ on:
     ;
 
 onStatement:
-    'show' (((ID) | (ID '[' ('initial'|'accepting') '=' ('false'|'true')) ']')) (', '(((ID) | (ID '[' ('initial'|'accepting') '=' ('false'|'true')) ']')))* ';'
+    'show' (((ID)|('<' ID ',' ID '>') | (ID '[' ('initial'|'accepting') '=' ('false'|'true')) ']')) (', '(((ID)|('<' ID ',' ID '>') | (ID '[' ('initial'|'accepting') '=' ('false'|'true')) ']')))* ';'
     | 'pause' ';'
-    | 'show' '<' ID ',' ID '>' ';'
+    //| ('show' '<' ID ',' ID '>') ';'
+    | foreach
+    ;
+foreach:
+    'for' ID 'in' '{{'expression (', 'expression)* '}}'  foreachStatement
+     |'for' ID 'in' '{{'expression (', 'expression)* '}}' '<<<' foreachStatement+ '>>>'
     ;
 
+foreachStatement:
+    'show' ID '[' ('initial'|'accepting') '=' ('false'|'true') ']' ';'
+    | ID '[' ('initial'|'accepting') '=' ('false'|'true') ']' ';'
+ ;
 play:
     'play' ID ';'
     ;
@@ -111,9 +140,9 @@ play:
 /* -- LEXER -- */
 
 INTEGER:[0-9]+;
-ID: ([a-zA-Z]|[0-9]|'_')+;
-FLOAT:[0-9]+'.'[0-9]*;
 
+FLOAT:[0-9]+'.'[0-9]*;
+ID: ([a-zA-Z]|[0-9]|'_')+;
 WS: [ \n\r\t]+ -> skip;
 COMMENT: '//' ~[\r\n]* -> skip;
 COMMENT2: '/*' .*? '*/' -> skip;
