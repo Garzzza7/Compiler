@@ -90,16 +90,16 @@ pointAssignment:
     ;
 
 expression:
-      '(' expression ':' expression ')'
-    | '(' expression ',' expression ')'
-    | '(' expression ';' expression ')'
-    | '-' expression
-    | '('expression')'
-    | expression op=('/' | '*') expression
-    | expression op=('+' | '-') expression
-    | INTEGER
-    | FLOAT
-    | ID
+      '(' expression ':' expression ')' #ColonExpression
+    | '(' expression ',' expression ')' #ComaExpression
+    | '(' expression ';' expression ')' #SemicolonExpression
+    | '-' expression #NegativeExpression
+    | '('expression')' #ParenthesisExpression
+    | expression op=('/' | '*') expression #DivisionAndMultiplicationExpression
+    | expression op=('+' | '-') expression #AdditionAndSubtractionExpression
+    | INTEGER #IntegerExpression
+    | FLOAT #FloatExpression
+    | ID #IDExpression
     ;
 
 animation:
