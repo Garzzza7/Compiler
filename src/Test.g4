@@ -90,15 +90,16 @@ pointAssignment:
     ;
 
 expression:
-    ID
-    | '(' expression ':' expression ')'
+      '(' expression ':' expression ')'
     | '(' expression ',' expression ')'
     | '(' expression ';' expression ')'
-    | INTEGER
-    | FLOAT
     | '-' expression
     | '('expression')'
-    | expression op=('+' | '-' | '/' | '*' | '=') expression
+    | expression op=('/' | '*') expression
+    | expression op=('+' | '-') expression
+    | INTEGER
+    | FLOAT
+    | ID
     ;
 
 animation:
