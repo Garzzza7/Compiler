@@ -21,13 +21,18 @@ automaton:
     ;
 
 automatonStatement:
-     'state' ID(', 'ID)*';'
-     | ID '[' role=('initial'|'accepting') '=' value=('false'|'true') ']' ';'
+     stateCreation
+     | stateAssignment
      | transition
      | foreach
      ;
 
-
+stateCreation:
+    'state' ID(', 'ID)*';'
+;
+stateAssignment:
+    ID '[' role=('initial'|'accepting') '=' value=('false'|'true') ']' ';'
+;
 
 transition:
       'transition'
@@ -36,9 +41,7 @@ transition:
          ;
 
 automatonType:
-        'NFA'
-    |   'DFA'
-    |   'complete DFA'
+     AUTOMATONNAME
     ;
 
 view:
@@ -58,34 +61,26 @@ viewStatement:
     | 'grid' expression '(' expression ',' expression')' '[' (gridStatement ', ')* gridStatement']' ';'
     ;
 align:
-    'below'
-    | 'above'
-    | 'below left'
-    | 'below right'
-    | 'right'
-    | 'left'
+    ALIGN
 ;
 gridStatement:
-    'step' '=' expression
-    | 'margin' '=' expression
-    | 'color' '=' color
-    | 'line' '=' line
+    'step' '=' expression       #stepValue
+    | 'margin' '=' expression   #marginValue
+    | 'color' '=' color         #colorValue
+    | 'line' '=' line           #lineValue
 ;
 color:
-    'gray'
-    | 'red'
-    | 'green'
-    | 'blue'
+    COLOR
 ;
 line:
-    'solid'
+    LINE
 ;
 placeAssignment:
     ID 'at' '(' expression ',' expression')'
     ;
 
 pointAssignment:
-    expression '=' '(' ID ')' ';'
+    expression '=' expression ';'
     | 'point' expression '=' expression ';'
     ;
 
@@ -131,15 +126,18 @@ foreach:
     ;
 
 foreachStatement:
-    'show' SYMBOL '[' ('initial'|'accepting') '=' ('false'|'true') ']' ';'
-    | SYMBOL '[' ('initial'|'accepting') '=' ('false'|'true') ']' ';'
+    'show' SYMBOL '[' role=('initial'|'accepting') '=' value=('false'|'true') ']' ';'
+    | SYMBOL '[' role=('initial'|'accepting') '=' value=('false'|'true') ']' ';'
  ;
 play:
     'play' ID ';'
     ;
 
 /* -- LEXER -- */
-
+ALIGN:'below'|'above'|'below left'|'below right'|'right'|'left';
+LINE:'solid'|'dotted'| 'dashed';
+COLOR:'gray'|'red'|'green'|'blue';
+AUTOMATONNAME:'NFA'|'DFA'|'complete DFA';
 INTEGER:[0-9]+;
 SYMBOL:[a-z];
 FLOAT:[0-9]+'.'[0-9]*;
