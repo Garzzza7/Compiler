@@ -47,6 +47,7 @@ class Node:
     def set_positiony(self):
         positiony = self
 
+# if the node is accepting, it draws a larger circle around it and if the node is initial, it draws an arrow pointing to that node
     def show_state(self):
         start_point = (self.positionx - 100, self.positiony)
         end_point = (self.positionx - node_radius, self.positiony)
@@ -59,7 +60,7 @@ class Node:
                     text_thickness, cv2.LINE_AA)
         cv2.circle(canvas, (self.positionx, self.positiony), node_radius, node_color, node_thickness)
 
-
+# it is used to connect two nodes on the canvas and display the transition between them
 def connect_nodes(node1: Node, node2: Node, arr):
     # text_size, _ = cv2.getTextSize(arr, text_font, text_scale, text_thickness)
     string = " "
@@ -94,37 +95,50 @@ def connect_nodes(node1: Node, node2: Node, arr):
     #    cv2.line(canvas, (node1.positionx+node_radius,node1.positiony+node_radius), (node2.positionx-(node_radius//2),node2.positiony-(node_radius//2)), line_color, line_thickness)
 
 
+'''def dashed_line_drawer(canvas, initial_x, initial_y, width, height, step, margin, color=(0, 255, 0)):
+    new_width = initial_x
+    new_height = initial_y
+    while new_width <= width + initial_x:
+        for i in range(initial_x, width + initial_x):
+            if i % 5 != 0:
+                cv2.line(canvas, (new_width, i), (new_width, i), color=color, thickness=margin)
+        new_width += step
+    while new_height <= height + initial_y:
+        for i in range(initial_y, height + initial_y):
+            if i % 5 != 0:
+                cv2.line(canvas, (i, new_height), (i, new_height), color=color, thickness=margin)
+        new_height += step'''
+
 def dashed_line_drawer(canvas, initial_x, initial_y, width, height, step, margin, color=(0, 255, 0)):
+    for x in range(initial_x, width + initial_x, step):
+        for y in range(initial_y, height + initial_y, step):
+            if x % 5 != 0:
+                cv2.line(canvas, (x, y), (x, y), color=color, thickness=margin)
+            if y % 5 != 0:
+                cv2.line(canvas, (x, y), (x, y), color=color, thickness=margin)
+
+
+'''def dotted_line_drawer(canvas, initial_x, initial_y, width, height, step, margin, color=(0, 255, 0)):
     new_width = initial_x
     new_height = initial_y
     while new_width <= width + initial_x:
         for i in range(initial_x, width + initial_x):
-            if i % 5 != 0:
+            if i % 2 == 0:
                 cv2.line(canvas, (new_width, i), (new_width, i), color=color, thickness=margin)
         new_width += step
     while new_height <= height + initial_y:
         for i in range(initial_y, height + initial_y):
-            if i % 5 != 0:
+            if i % 2 == 0:
                 cv2.line(canvas, (i, new_height), (i, new_height), color=color, thickness=margin)
-        new_height += step
-
-
+        new_height += step'''
 def dotted_line_drawer(canvas, initial_x, initial_y, width, height, step, margin, color=(0, 255, 0)):
-    new_width = initial_x
-    new_height = initial_y
-    while new_width <= width + initial_x:
-        for i in range(initial_x, width + initial_x):
-            if i % 2 == 0:
-                cv2.line(canvas, (new_width, i), (new_width, i), color=color, thickness=margin)
-        new_width += step
-    while new_height <= height + initial_y:
-        for i in range(initial_y, height + initial_y):
-            if i % 2 == 0:
-                cv2.line(canvas, (i, new_height), (i, new_height), color=color, thickness=margin)
-        new_height += step
+    for x in range(initial_x, width + initial_x, step):
+        if x % 2 == 0:
+            for y in range(initial_y, height + initial_y, step):
+                if y % 2 == 0:
+                    cv2.line(canvas, (x, y), (x, y), color=color, thickness=margin)
 
-
-def line_drawer(canvas, initial_x, initial_y, width, height, step, margin, color=(0, 255, 0)):
+'''def line_drawer(canvas, initial_x, initial_y, width, height, step, margin, color=(0, 255, 0)):
     new_width = initial_x
     new_height = initial_y
     while new_width <= width + initial_x:
@@ -132,7 +146,14 @@ def line_drawer(canvas, initial_x, initial_y, width, height, step, margin, color
         new_width += step
     while new_height <= height + initial_y:
         cv2.line(canvas, (initial_y, new_height), (height + initial_y, new_height), color=color, thickness=margin)
-        new_height += step
+        new_height += step'''
+
+def line_drawer(canvas, initial_x, initial_y, width, height, step, margin, color=(0, 255, 0)):
+    for x in range(initial_x, width + initial_x, step):
+        cv2.line(canvas, (x, initial_y), (x, initial_y + height), color=color, thickness=margin)
+
+    for y in range(initial_y, height + initial_y, step):
+        cv2.line(canvas, (initial_x, y), (initial_x + width, y), color=color, thickness=margin)
 
 
 def self_connect(node: Node, arr):
