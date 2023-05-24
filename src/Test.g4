@@ -49,16 +49,16 @@ view:
     ;
 
 viewStatement:
-    'place'  placeAssignment(', ' placeAssignment)* ';'
-    | 'point' ID (', ' ID)* ';'
-    | ID '=' '(' ID ')' ';'
-    | /*'point'?*/ ID '=' expression ';'
-    | pointAssignment
+    'place'  placeAssignment(', ' placeAssignment)* ';' #placeView
+    | 'point' ID (', ' ID)* ';'                         #pointView
+    | ID '=' '(' ID ')' ';'                             #valueView
+    | /*'point'?*/ ID '=' expression ';'                #expressionView
+    | pointAssignment                                   #pointView
     //| expression
-    | '<' ID ',' ID '>' 'as' ID ('--' ID)* ';'
-    | 'place' '<' ID ',' ID '>' '#label' '[''align' '=' align ']' 'at' ID';'
-    | '<' ID ',' ID '>' '#label' '[''align' '=' align ']' ';'
-    | 'grid' expression '(' expression ',' expression')' '[' (gridStatement ', ')* gridStatement']' ';'
+    | '<' ID ',' ID '>' 'as' ID ('--' ID)* ';'          #pointModificationView1
+    | 'place' '<' ID ',' ID '>' '#label' '[''align' '=' align ']' 'at' ID';'                            #pointModificationView2
+    | '<' ID ',' ID '>' '#label' '[''align' '=' align ']' ';'                                           #pointModificationView3
+    | 'grid' expression '(' expression ',' expression')' '[' (gridStatement ', ')* gridStatement']' ';' #gridView
     ;
 align:
     ALIGN
