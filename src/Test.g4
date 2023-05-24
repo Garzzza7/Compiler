@@ -11,7 +11,7 @@ sector:
     ;
 
 alphabet:
-    'alphabet'  '{' '\''ID'\''(', ' '\''ID'\'')* '}'
+    'alphabet'  '{' '\''SYMBOL'\''(', ' '\''SYMBOL'\'')* '}'
     ;
 
 automaton:
@@ -22,7 +22,7 @@ automaton:
 
 automatonStatement:
      'state' ID(', 'ID)*';'
-     | ID '[' ('initial'|'accepting') '=' ('false'|'true') ']' ';'
+     | ID '[' role=('initial'|'accepting') '=' value=('false'|'true') ']' ';'
      | transition
      | foreach
      ;
@@ -31,8 +31,8 @@ automatonStatement:
 
 transition:
       'transition'
-        (ID '->' '\'' ID '\'' (',' '\'' ID '\'')* '->' ID ',' )*
-         ID '->' '\'' ID '\'' (',' '\'' ID '\'')* '->' ID ';'
+        (ID '->' '\'' SYMBOL '\'' (',' '\'' SYMBOL '\'')* '->' ID ',' )*
+         ID '->' '\'' SYMBOL '\'' (',' '\'' SYMBOL '\'')* '->' ID ';'
          ;
 
 automatonType:
@@ -49,9 +49,9 @@ viewStatement:
     'place'  placeAssignment(', ' placeAssignment)* ';'
     | 'point' ID (', ' ID)* ';'
     | ID '=' '(' ID ')' ';'
-    | 'point'? ID '=' expression ';'
+    | /*'point'?*/ ID '=' expression ';'
     | pointAssignment
-    | expression
+    //| expression
     | '<' ID ',' ID '>' 'as' ID ('--' ID)* ';'
     | 'place' '<' ID ',' ID '>' '#label' '[''align' '=' align ']' 'at' ID';'
     | '<' ID ',' ID '>' '#label' '[''align' '=' align ']' ';'
@@ -90,16 +90,16 @@ pointAssignment:
     ;
 
 expression:
-      '(' expression ':' expression ')' #ColonExpression
-    | '(' expression ',' expression ')' #ComaExpression
-    | '(' expression ';' expression ')' #SemicolonExpression
-    | '-' expression #NegativeExpression
-    | '('expression')' #ParenthesisExpression
-    | expression op=('/' | '*') expression #DivisionAndMultiplicationExpression
-    | expression op=('+' | '-') expression #AdditionAndSubtractionExpression
-    | INTEGER #IntegerExpression
-    | FLOAT #FloatExpression
-    | ID #IDExpression
+      '(' expression ':' expression ')'     #ColonExpression
+    | '(' expression ',' expression ')'     #ComaExpression
+    | '(' expression ';' expression ')'     #SemicolonExpression
+    | '-' expression                        #NegativeExpression
+    | '('expression')'                      #ParenthesisExpression
+    | expression op=('/' | '*') expression  #DivisionAndMultiplicationExpression
+    | expression op=('+' | '-') expression  #AdditionAndSubtractionExpression
+    | INTEGER                               #IntegerExpression
+    | FLOAT                                 #FloatExpression
+    | ID                                    #IDExpression
     ;
 
 animation:
@@ -126,13 +126,13 @@ onStatement:
     | foreach
     ;
 foreach:
-    'for' ID 'in' '{{'expression (', 'expression)* '}}'  foreachStatement
-     |'for' ID 'in' '{{'expression (', 'expression)* '}}' '<<<' foreachStatement+ '>>>'
+    'for' SYMBOL 'in' '{{'expression (', 'expression)* '}}'  foreachStatement
+     |'for' SYMBOL 'in' '{{'expression (', 'expression)* '}}' '<<<' foreachStatement+ '>>>'
     ;
 
 foreachStatement:
-    'show' ID '[' ('initial'|'accepting') '=' ('false'|'true') ']' ';'
-    | ID '[' ('initial'|'accepting') '=' ('false'|'true') ']' ';'
+    'show' SYMBOL '[' ('initial'|'accepting') '=' ('false'|'true') ']' ';'
+    | SYMBOL '[' ('initial'|'accepting') '=' ('false'|'true') ']' ';'
  ;
 play:
     'play' ID ';'
@@ -141,7 +141,7 @@ play:
 /* -- LEXER -- */
 
 INTEGER:[0-9]+;
-
+SYMBOL:[a-z];
 FLOAT:[0-9]+'.'[0-9]*;
 ID: ([a-zA-Z]|[0-9]|'_')+;
 WS: [ \n\r\t]+ -> skip;
