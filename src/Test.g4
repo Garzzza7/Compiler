@@ -36,10 +36,12 @@ stateAssignment:
 
 transition:
       'transition'
-        (ID '->' '\'' SYMBOL '\'' (',' '\'' SYMBOL '\'')* '->' ID ',' )*
-         ID '->' '\'' SYMBOL '\'' (',' '\'' SYMBOL '\'')* '->' ID ';'
+        (transitionStatement',' )*
+         transitionStatement';'
          ;
-
+transitionStatement:
+       ID '->' '\'' SYMBOL '\'' (',' '\'' SYMBOL '\'')* '->' ID
+;
 automatonType:
      AUTOMATONNAME
     ;
@@ -49,13 +51,13 @@ view:
     ;
 
 viewStatement:
-    'place'  placeAssignment(', ' placeAssignment)* ';' #placeView
-    | 'point' ID (', ' ID)* ';'                         #pointView
-    | ID '=' '(' ID ')' ';'                             #valueView
-    | /*'point'?*/ ID '=' expression ';'                #expressionView
-    | pointAssignment                                   #pointView
+    'place'  placeAssignment(', ' placeAssignment)* ';'                                                 #placeView
+    | 'point' ID (', ' ID)* ';'                                                                         #pointView
+    //| ID '=' '(' ID ')' ';'                                                                             #valueView
+    | /*'point'?*/ ID '=' expression ';'                                                                #expressionView
+    | pointAssignment                                                                                   #pointView
     //| expression
-    | '<' ID ',' ID '>' 'as' ID ('--' ID)* ';'          #pointModificationView1
+    | '<' ID ',' ID '>' 'as' ID ('--' ID)* ';'                                                          #pointModificationView1
     | 'place' '<' ID ',' ID '>' '#label' '[''align' '=' align ']' 'at' ID';'                            #pointModificationView2
     | '<' ID ',' ID '>' '#label' '[''align' '=' align ']' ';'                                           #pointModificationView3
     | 'grid' expression '(' expression ',' expression')' '[' (gridStatement ', ')* gridStatement']' ';' #gridView
