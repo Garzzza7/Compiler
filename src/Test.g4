@@ -1,8 +1,20 @@
 grammar Test;
-program:
-    alphabet sector* EOF
-    ;
 
+@parser::header {
+import java.util.Map;
+import java.util.HashMap;
+}
+
+@parser::members {
+static protected Map<String,Symbol> symbolTable = new HashMap<>();
+}
+
+program:
+    sectorList EOF
+    ;
+sectorList:
+    alphabet sector*
+;
 sector:
     automaton
     | view
@@ -28,7 +40,10 @@ automatonStatement:
      ;
 
 stateCreation:
-    'state' ID(', 'ID)*';'
+    'state' stateCreationID(', 'stateCreationID)*';'
+;
+stateCreationID:
+    ID
 ;
 stateAssignment:
     ID '[' role=('initial'|'accepting') '=' value=('false'|'true') ']' ';'
@@ -52,7 +67,7 @@ view:
 
 viewStatement:
     'place'  placeAssignment(', ' placeAssignment)* ';'                                                 #placeView
-    | 'point' ID (', ' ID)* ';'                                                                         #pointView
+    | 'point' pointID (', ' pointID)* ';'                                                               #pointView
     //| ID '=' '(' ID ')' ';'                                                                             #valueView
     | /*'point'?*/ ID '=' expression ';'                                                                #expressionView
     | pointAssignment                                                                                   #pointView
@@ -60,8 +75,11 @@ viewStatement:
     | '<' ID ',' ID '>' 'as' ID ('--' ID)* ';'                                                          #pointModificationView1
     | 'place' '<' ID ',' ID '>' '#label' '[''align' '=' align ']' 'at' ID';'                            #pointModificationView2
     | '<' ID ',' ID '>' '#label' '[''align' '=' align ']' ';'                                           #pointModificationView3
-    | 'grid' expression '(' expression ',' expression')' '[' (gridStatement ', ')* gridStatement']' ';' #gridView
+    | 'grid' e1=expression '(' e2=expression ',' e3=expression')' '[' (gridStatement ', ')* gridStatement']' ';' #gridView
     ;
+pointID:
+    ID
+;
 align:
     ALIGN
 ;
@@ -78,22 +96,22 @@ line:
     LINE
 ;
 placeAssignment:
-    ID 'at' '(' expression ',' expression')'
+    ID 'at' '(' e1=expression ',' e2=expression')'
     ;
 
 pointAssignment:
-    expression '=' expression ';'
-    | 'point' expression '=' expression ';'
+    e1=expression '=' e2=expression ';'
+    | 'point' e1=expression '=' e2=expression ';'
     ;
 
-expression:
-      '(' expression ':' expression ')'     #ColonExpression
-    | '(' expression ',' expression ')'     #ComaExpression
-    | '(' expression ';' expression ')'     #SemicolonExpression
-    | '-' expression                        #NegativeExpression
-    | '('expression')'                      #ParenthesisExpression
-    | expression op=('/' | '*') expression  #DivisionAndMultiplicationExpression
-    | expression op=('+' | '-') expression  #AdditionAndSubtractionExpression
+expression returns[Type eType,String varName]:
+      '(' e1=expression ':' e2=expression ')'     #ColonExpression
+    | '(' e1=expression ',' e2=expression ')'     #ComaExpression
+    | '(' e1=expression ';' e2=expression ')'     #SemicolonExpression
+    | '-' e=expression                        #NegativeExpression
+    | '('e=expression')'                      #ParenthesisExpression
+    | e1=expression op=('/' | '*') e2=expression  #DivisionAndMultiplicationExpression
+    | e1=expression op=('+' | '-') e2=expression  #AdditionAndSubtractionExpression
     | INTEGER                               #IntegerExpression
     | FLOAT                                 #FloatExpression
     | ID                                    #IDExpression
@@ -109,7 +127,7 @@ animationStatement:
     ;
 
 viewport:
-    'viewport' ID 'for' ID 'at' '(' expression ',' expression ')' '--' '++' '(' expression ',' expression ')' ';'
+    'viewport' ID 'for' ID 'at' '(' e1=expression ',' e2=expression ')' '--' '++' '(' e3=expression ',' e4=expression ')' ';'
     ;
 
 on:
@@ -117,11 +135,29 @@ on:
     ;
 
 onStatement:
-    'show' (((ID)|('<' ID ',' ID '>') | (ID '[' ('initial'|'accepting') '=' ('false'|'true')) ']')) (', '(((ID)|('<' ID ',' ID '>') | (ID '[' ('initial'|'accepting') '=' ('false'|'true')) ']')))* ';'
-    | 'pause' ';'
+    'show' onStatementShow (', 'onStatementShow)* ';'
+    | onStatementPause
     //| ('show' '<' ID ',' ID '>') ';'
     | foreach
     ;
+onStatementShow:
+//     (((ID)|('<' ID ',' ID '>') | (ID '[' role=('initial'|'accepting') '=' value=('false'|'true')) ']')) (', '(((ID)|('<' ID ',' ID '>') | (ID '[' role=('initial'|'accepting') '=' value=('false'|'true')) ']')))* ';'
+    onStatementShowID
+    | onStatementShowTransitions
+    | onStatementShowIDwithChange
+;
+onStatementShowID:
+       ID
+;
+onStatementShowTransitions:
+    '<' ID ',' ID '>'
+;
+onStatementShowIDwithChange:
+    ID '[' role=('initial'|'accepting') '=' value=('false'|'true') ']'
+;
+onStatementPause:
+    'pause' ';'
+;
 foreach:
     'for' SYMBOL 'in' '{{'expression (', 'expression)* '}}'  foreachStatement
      |'for' SYMBOL 'in' '{{'expression (', 'expression)* '}}' '<<<' foreachStatement+ '>>>'
