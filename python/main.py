@@ -79,7 +79,9 @@ class StateType(Enum):
 
 
 class Transition(Showable):
-    def __init__(self, symbols):
+    def __init__(self, name, symbols):
+        super().__init__()
+        self.name = name
         self.symbols = symbols
         self.labelAlignment = Align.CENTERED
         self.arrowPoints = []
@@ -100,13 +102,13 @@ class Transition(Showable):
 
 class LineTransition(Transition):
     def __init__(self, start_state, end_state, symbols):
-        super().__init__(symbols)
-
+        super().__init__('<' + start_state.name + ',' + end_state.name + '>', symbols)
         self.start_state = start_state
         self.end_state = end_state
 
-        p1 = start_state.get_position()
-        p2 = end_state.get_position()
+    def draw(self, mat):
+        p1 = self.start_state.get_position()
+        p2 = self.end_state.get_position()
 
         p21 = p2 - p1
         d = p21 / p21.norm() * 0.7
@@ -115,9 +117,11 @@ class LineTransition(Transition):
         pb = p2 - d
         self.arrowPoints.append(pb)
 
-        p = (pa + pb) / 2 + Point(0, -0.2)
+        p = Point(0, -0.2) + (pa + pb) / 2
         self.labelReferencePoint = p
         self.labelAlignment = Align.CENTERED
+
+        super().draw(mat)
 
 
 # --------------------------------------------------------
@@ -125,11 +129,12 @@ class LineTransition(Transition):
 
 class LoopTransition(Transition):
     def __init__(self, start_state, symbols):
-        super().__init__(symbols)
+        super().__init__('<' + start_state.name + ',' + start_state.name + '>', symbols)
 
         self.start_state = start_state
 
-        p = start_state.get_position()
+    def draw(self, mat):
+        p = self.start_state.get_position()
 
         p1 = p + Point(-0.2, -0.6)
         self.arrowPoints.append(p1)
@@ -143,6 +148,9 @@ class LoopTransition(Transition):
         p1 = p1 + Point(0.2, -0.2)
         self.labelReferencePoint = p1
         self.labelAlignment = Align.LEFT
+
+        super().draw(mat)
+
 
 # --------------------------------------------------------
 
@@ -196,14 +204,21 @@ class State(Showable):
 class Automaton:
     def __init__(self):
         self.name = ""
-        self.states = []
-        self.transitions = []
+        self.states = {}
+        self.transitions = {}
 
     def add_state(self, state):
-        self.states.append(state)
+        self.states[state.name] = state
 
     def add_transition(self, transition):
-        self.transitions.append(transition)
+        self.transitions[transition.name] = transition
+
+    def draw(self):
+        for s in self.states:
+            s.draw()
+
+        for t in self.transitions:
+            t.draw()
 
 
 # Animation code
@@ -233,4 +248,23 @@ class Sequence:
     def next_step(self):
         self.animations.pop(0).show()
 
+
 # --------------------------------------------------------
+
+# -------------- HERE STARTS THE EXAMPLE 1 ---------------
+
+a1 = Automaton()
+
+# state A, B;
+a1.add_state(State('A'))
+a1.add_state(State('B'))
+
+# A [initial = true];
+# B [accepting = true];
+a1.states['A'].set_type(StateType.INITIAL)
+a1.states['B'].set_type(StateType.ACCEPTING)
+
+# A -> 'a','b' -> B,
+# A -> 'a','b','c' -> A;
+a1.add_transition(LineTransition(a1.states['A'], a1.states['B'], {'a', 'b'}))
+a1.add_transition(LoopTransition(a1.states['A'], {'a', 'b', 'c'}))
