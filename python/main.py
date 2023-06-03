@@ -103,6 +103,31 @@ class Transition(Showable):
             cv.line(mat, p, points[i + 1], self.strokeColor, self.strokeThickness)
         cv.arrowedLine(mat, points[-2], points[-1], self.strokeColor, self.strokeThickness)
 
+        # draw label
+        sym = copy.deepcopy(self.symbols)
+        text_to_write = sym.pop(0)
+        for s in sym:
+            text_to_write += ", "
+            text_to_write += s
+
+        c = self.labelReferencePoint * SCALE
+        sz, _ = cv.getTextSize(text_to_write, cv.FONT_HERSHEY_SIMPLEX, 0.4, self.strokeThickness)
+
+        match self.labelAlignment:
+            case Align.CENTERED:
+                c = Point(-sz[0] / 2, sz[1] / 2) + c
+            case Align.LEFT:
+                c = c
+            case Align.RIGHT:
+                c = c + Point(-sz[0], 0)
+            case Align.BELOW:
+                c = c + Point(0, -sz[0])
+            case Align.ABOVE:
+                c = c + Point(0, sz[0])
+
+        center = c.round_to_int()
+        cv.putText(mat, text_to_write, center, cv.FONT_HERSHEY_SIMPLEX, 0.4, self.strokeThickness)
+
 
 # --------------------------------------------------------
 
@@ -248,6 +273,7 @@ class Automaton:
 
 # Animation code
 
+
 class Animation:
     def __init__(self):
         self.to_show = []
@@ -261,7 +287,6 @@ class Animation:
 
 
 # --------------------------------------------------------
-
 
 class Sequence:
     def __init__(self, mat, win):

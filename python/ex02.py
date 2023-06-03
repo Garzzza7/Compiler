@@ -17,10 +17,10 @@ a2.figures['B'].set_type(StateType.ACCEPTING)
 # A -> 'c' -> A,
 # B -> 'c' -> A,
 # B -> 'a','b' -> B;
-a2.set_transition(LineTransition(a2.figures['A'], a2.figures['B'], {'a', 'b'}))
-a2.set_transition(LoopTransition(a2.figures['A'], {'c'}))
-a2.set_transition(LineTransition(a2.figures['B'], a2.figures['A'], {'c'}))
-a2.set_transition(LoopTransition(a2.figures['B'], {'a', 'b'}))
+a2.set_transition(LineTransition(a2.figures['A'], a2.figures['B'], ['a', 'b']))
+a2.set_transition(LoopTransition(a2.figures['A'], ['c']))
+a2.set_transition(LineTransition(a2.figures['B'], a2.figures['A'], ['c']))
+a2.set_transition(LoopTransition(a2.figures['B'], ['a', 'b']))
 
 # place A at (2,1), B at (5,1);
 a2.figures['A'].set_position(Point(2, 1))

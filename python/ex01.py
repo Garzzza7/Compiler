@@ -15,8 +15,8 @@ a1.figures['B'].set_type(StateType.ACCEPTING)
 
 # A -> 'a','b' -> B,
 # A -> 'a','b','c' -> A;
-a1.set_transition(LineTransition(a1.figures['A'], a1.figures['B'], {'a', 'b'}))
-a1.set_transition(LoopTransition(a1.figures['A'], {'a', 'b', 'c'}))
+a1.set_transition(LineTransition(a1.figures['A'], a1.figures['B'], ['a', 'b']))
+a1.set_transition(LoopTransition(a1.figures['A'], ['a', 'b', 'c']))
 
 # I skipped the declaration of a view completely in hope that it will be enough to just define the positions of figures.
 
