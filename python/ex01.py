@@ -10,19 +10,19 @@ a1.set_state(State('B'))
 
 # A [initial = true];
 # B [accepting = true];
-a1.states['A'].set_type(StateType.INITIAL)
-a1.states['B'].set_type(StateType.ACCEPTING)
+a1.figures['A'].set_type(StateType.INITIAL)
+a1.figures['B'].set_type(StateType.ACCEPTING)
 
 # A -> 'a','b' -> B,
 # A -> 'a','b','c' -> A;
-a1.set_transition(LineTransition(a1.states['A'], a1.states['B'], {'a', 'b'}))
-a1.set_transition(LoopTransition(a1.states['A'], {'a', 'b', 'c'}))
+a1.set_transition(LineTransition(a1.figures['A'], a1.figures['B'], {'a', 'b'}))
+a1.set_transition(LoopTransition(a1.figures['A'], {'a', 'b', 'c'}))
 
 # I skipped the declaration of a view completely in hope that it will be enough to just define the positions of figures.
 
 # place A at (2,1), B at (5,1);
-a1.states['A'].set_position(Point(2, 1))
-a1.states['B'].set_position(Point(5, 1))
+a1.figures['A'].set_position(Point(2, 1))
+a1.figures['B'].set_position(Point(5, 1))
 
 # create the main window (animation support)
 window = np.zeros((510, 510, 3), dtype="uint8")
@@ -37,23 +37,23 @@ vp1.fill(255)
 # show A, B [accepting = false];
 # pause;
 frame1 = Animation()
-frame1.add_to_show(a1.states['A'].set_type(StateType.NORMAL))
-frame1.add_to_show(a1.states['B'].set_type(StateType.NORMAL))
+frame1.add_to_show(a1.figures['A'].set_type(StateType.NORMAL))
+frame1.add_to_show(a1.figures['B'].set_type(StateType.NORMAL))
 
 # show <A,B>;
 # pause;
 frame2 = Animation()
-frame2.add_to_show(a1.transitions['<A,B>'])
+frame2.add_to_show(a1.figures['<A,B>'])
 
 # show <A,A>;
 # pause;
 frame3 = Animation()
-frame3.add_to_show(a1.transitions['<A,A>'])
+frame3.add_to_show(a1.figures['<A,A>'])
 
 # show B [accepting = true];
 # pause;
 frame4 = Animation()
-frame4.add_to_show(a1.states['B'].set_type(StateType.ACCEPTING))
+frame4.add_to_show(a1.figures['B'].set_type(StateType.ACCEPTING))
 
 # Then all the animations are arranged in a sequence:
 

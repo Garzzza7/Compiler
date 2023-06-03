@@ -222,7 +222,7 @@ class State(Showable):
 
         # draw label
         sz, _ = cv.getTextSize(self.name, cv.FONT_HERSHEY_SIMPLEX, 0.8, self.strokeThickness)
-        c = c + Point(-sz[0] / 2, sz[1] / 2)
+        c = Point(-sz[0] / 2, sz[1] / 2) + c
         center = c.round_to_int()
         cv.putText(mat, self.name, center, cv.FONT_HERSHEY_SIMPLEX, 0.8, self.strokeThickness)
 
@@ -233,21 +233,17 @@ class State(Showable):
 class Automaton:
     def __init__(self):
         self.name = ""
-        self.states = {}
-        self.transitions = {}
+        self.figures = {}
 
     def set_state(self, state):
-        self.states[state.name] = state
+        self.figures[state.name] = state
 
     def set_transition(self, transition):
-        self.transitions[transition.name] = transition
+        self.figures[transition.name] = transition
 
     def draw(self):
-        for s in self.states:
-            s.draw()
-
-        for t in self.transitions:
-            t.draw()
+        for f in self.figures:
+            f.draw()
 
 
 # Animation code
