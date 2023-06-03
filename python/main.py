@@ -48,17 +48,12 @@ class Point:
         return math.sqrt(self.x ** 2 + self.y ** 2)
 
 
-# --------------------------------------------------------
-
 class Align(Enum):
     CENTERED = 0
     LEFT = 1
     RIGHT = 2
     ABOVE = 3
     BELOW = 4
-
-
-# --------------------------------------------------------
 
 
 class Showable:
@@ -70,18 +65,6 @@ class Showable:
 
     def draw(self, mat):
         pass
-
-
-# --------------------------------------------------------
-
-
-class StateType(Enum):
-    NORMAL = 0,
-    INITIAL = 1,
-    ACCEPTING = 2,
-
-
-# --------------------------------------------------------
 
 
 class Transition(Showable):
@@ -121,15 +104,12 @@ class Transition(Showable):
             case Align.RIGHT:
                 c = c + Point(-sz[0], 0)
             case Align.BELOW:
-                c = c + Point(0, -sz[0])
+                c = c + Point(0, sz[1])
             case Align.ABOVE:
-                c = c + Point(0, sz[0])
+                c = c + Point(0, -sz[1])
 
         center = c.round_to_int()
         cv.putText(mat, text_to_write, center, cv.FONT_HERSHEY_SIMPLEX, 0.4, self.strokeThickness)
-
-
-# --------------------------------------------------------
 
 
 class LineTransition(Transition):
@@ -154,9 +134,6 @@ class LineTransition(Transition):
         self.labelAlignment = Align.CENTERED
 
         super().draw(mat)
-
-
-# --------------------------------------------------------
 
 
 class LoopTransition(Transition):
@@ -184,9 +161,6 @@ class LoopTransition(Transition):
         super().draw(mat)
 
 
-# --------------------------------------------------------
-
-
 class CustomTransition(Transition):
     def __init__(self, name, arrow_positions, symbols):
         super().__init__(name, symbols)
@@ -209,7 +183,10 @@ class CustomTransition(Transition):
         super().draw(mat)
 
 
-# --------------------------------------------------------
+class StateType(Enum):
+    NORMAL = 0,
+    INITIAL = 1,
+    ACCEPTING = 2,
 
 
 class State(Showable):
@@ -252,9 +229,6 @@ class State(Showable):
         cv.putText(mat, self.name, center, cv.FONT_HERSHEY_SIMPLEX, 0.8, self.strokeThickness)
 
 
-# --------------------------------------------------------
-
-
 class Automaton:
     def __init__(self):
         self.name = ""
@@ -286,8 +260,6 @@ class Animation:
             showable.draw(mat)
 
 
-# --------------------------------------------------------
-
 class Sequence:
     def __init__(self, mat, win):
         self.animations = []
@@ -302,4 +274,3 @@ class Sequence:
         np.copyto(self.window[10:, 10:, :], self.mat)
         cv.imshow('Sequence', self.window)
         cv.waitKey(0)
-
