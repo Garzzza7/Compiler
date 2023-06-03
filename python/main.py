@@ -59,8 +59,7 @@ class Align(Enum):
 class Showable:
     def __init__(self):
         self.position = Point(0, 0)
-        self.visible = False
-        self.strokeColor = (0, 0, 0)
+        self.stroke_color = (0, 0, 0)
         self.strokeThickness = 2
 
     def draw(self, mat):
@@ -83,8 +82,8 @@ class Transition(Showable):
             points.append(p1.round_to_int())
 
         for i, p in enumerate(points[:-2]):
-            cv.line(mat, p, points[i + 1], self.strokeColor, self.strokeThickness)
-        cv.arrowedLine(mat, points[-2], points[-1], self.strokeColor, self.strokeThickness)
+            cv.line(mat, p, points[i + 1], self.stroke_color, self.strokeThickness)
+        cv.arrowedLine(mat, points[-2], points[-1], self.stroke_color, self.strokeThickness)
 
         # draw label
         sym = copy.deepcopy(self.symbols)
@@ -215,10 +214,10 @@ class State(Showable):
         r = int(round(self.radius * SCALE))
 
         # draw state shape
-        cv.circle(mat, center, r, self.strokeColor, self.strokeThickness)
+        cv.circle(mat, center, r, self.stroke_color, self.strokeThickness)
         if self.type == StateType.ACCEPTING:
             r2 = int(round(0.8 * self.radius * SCALE))
-            cv.circle(mat, center, r2, self.strokeColor, self.strokeThickness)
+            cv.circle(mat, center, r2, self.stroke_color, self.strokeThickness)
         if self.type == StateType.INITIAL:
             pass  # TODO Add drawing features for initial states.
 
@@ -243,6 +242,37 @@ class Automaton:
     def draw(self):
         for f in self.figures:
             f.draw()
+
+
+class LineType(Enum):
+    SOLID = 0,
+    DOTTED = 1,
+    DASHED = 2
+
+
+class Grid(Showable):
+    def __init__(self, width, height):
+        super().__init__()
+        self.width = width
+        self.height = height
+        self.step = 0.5
+        self.margin = 0.33
+        self.line = LineType.SOLID
+
+    def set_step(self, step):
+        self.step = step
+
+    def set_margin(self, margin):
+        self.margin = margin
+
+    def set_color(self, color):
+        self.stroke_color = color
+
+    def set_line(self, line):
+        self.line = line
+
+    def draw(self, mat):
+        pass  # TODO drawing grid
 
 
 # Animation code
