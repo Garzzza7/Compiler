@@ -60,7 +60,7 @@ class Showable:
     def __init__(self):
         self.position = Point(0, 0)
         self.stroke_color = (0, 0, 0)
-        self.strokeThickness = 2
+        self.stroke_thickness = 2
 
     def draw(self, mat):
         pass
@@ -82,8 +82,8 @@ class Transition(Showable):
             points.append(p1.round_to_int())
 
         for i, p in enumerate(points[:-2]):
-            cv.line(mat, p, points[i + 1], self.stroke_color, self.strokeThickness)
-        cv.arrowedLine(mat, points[-2], points[-1], self.stroke_color, self.strokeThickness)
+            cv.line(mat, p, points[i + 1], self.stroke_color, self.stroke_thickness)
+        cv.arrowedLine(mat, points[-2], points[-1], self.stroke_color, self.stroke_thickness)
 
         # draw label
         sym = copy.deepcopy(self.symbols)
@@ -93,7 +93,7 @@ class Transition(Showable):
             text_to_write += s
 
         c = self.labelReferencePoint * SCALE
-        sz, _ = cv.getTextSize(text_to_write, cv.FONT_HERSHEY_SIMPLEX, 0.4, self.strokeThickness)
+        sz, _ = cv.getTextSize(text_to_write, cv.FONT_HERSHEY_SIMPLEX, 0.4, self.stroke_thickness)
 
         match self.labelAlignment:
             case Align.CENTERED:
@@ -108,7 +108,7 @@ class Transition(Showable):
                 c = c + Point(0, -sz[1])
 
         center = c.round_to_int()
-        cv.putText(mat, text_to_write, center, cv.FONT_HERSHEY_SIMPLEX, 0.4, self.strokeThickness)
+        cv.putText(mat, text_to_write, center, cv.FONT_HERSHEY_SIMPLEX, 0.4, self.stroke_thickness)
 
 
 class LineTransition(Transition):
@@ -214,18 +214,18 @@ class State(Showable):
         r = int(round(self.radius * SCALE))
 
         # draw state shape
-        cv.circle(mat, center, r, self.stroke_color, self.strokeThickness)
+        cv.circle(mat, center, r, self.stroke_color, self.stroke_thickness)
         if self.type == StateType.ACCEPTING:
             r2 = int(round(0.8 * self.radius * SCALE))
-            cv.circle(mat, center, r2, self.stroke_color, self.strokeThickness)
+            cv.circle(mat, center, r2, self.stroke_color, self.stroke_thickness)
         if self.type == StateType.INITIAL:
             pass  # TODO Add drawing features for initial states.
 
         # draw label
-        sz, _ = cv.getTextSize(self.name, cv.FONT_HERSHEY_SIMPLEX, 0.8, self.strokeThickness)
+        sz, _ = cv.getTextSize(self.name, cv.FONT_HERSHEY_SIMPLEX, 0.8, self.stroke_thickness)
         c = Point(-sz[0] / 2, sz[1] / 2) + c
         center = c.round_to_int()
-        cv.putText(mat, self.name, center, cv.FONT_HERSHEY_SIMPLEX, 0.8, self.strokeThickness)
+        cv.putText(mat, self.name, center, cv.FONT_HERSHEY_SIMPLEX, 0.8, self.stroke_thickness)
 
 
 class Automaton:
@@ -272,7 +272,71 @@ class Grid(Showable):
         self.line = line
 
     def draw(self, mat):
-        pass  # TODO drawing grid
+        width = int(self.width * SCALE)
+        height = int(self.height * SCALE)
+        step = int(self.step * SCALE)
+        margin = int(self.margin * SCALE)
+
+        current_width = margin
+        current_height = margin
+
+        while current_width <= width + margin:
+
+            if self.line == LineType.SOLID:
+                cv.line(mat,
+                        (current_width, margin),
+                        (current_width, height + margin),
+                        self.stroke_color,
+                        self.stroke_thickness)
+
+            if self.line == LineType.DOTTED:
+                for i in range(margin, height + margin):
+                    if i % (self.stroke_thickness * 2) == 0:
+                        cv.line(mat,
+                                (current_width, i),
+                                (current_width, i),
+                                self.stroke_color,
+                                self.stroke_thickness)
+
+            if self.line == LineType.DASHED:
+                for i in range(margin, height + margin):
+                    if i % (self.stroke_thickness * 5) <= 4:
+                        cv.line(mat,
+                                (current_width, i),
+                                (current_width, i),
+                                self.stroke_color,
+                                self.stroke_thickness)
+
+            current_width += step
+
+        while current_height <= height + margin:
+
+            if self.line == LineType.SOLID:
+                cv.line(mat,
+                        (margin, current_height),
+                        (width + margin, current_height),
+                        self.stroke_color,
+                        self.stroke_thickness)
+
+            if self.line == LineType.DOTTED:
+                for i in range(margin, width + margin):
+                    if i % (self.stroke_thickness * 2) == 0:
+                        cv.line(mat,
+                                (i, current_height),
+                                (i, current_height),
+                                self.stroke_color,
+                                self.stroke_thickness)
+
+            if self.line == LineType.DASHED:
+                for i in range(margin, width + margin):
+                    if i % (self.stroke_thickness * 5) <= 4:
+                        cv.line(mat,
+                                (i, current_height),
+                                (i, current_height),
+                                self.stroke_color,
+                                self.stroke_thickness)
+
+            current_height += step
 
 
 # Animation code
