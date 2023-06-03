@@ -99,4 +99,76 @@ a3.figures['<D,E>'].labelAlignment = Align.RIGHT
 a3.figures['<C,E>'].labelAlignment = Align.RIGHT
 a3.figures['<E,E>'].labelAlignment = Align.LEFT
 
-# HERE WILL BE THE ANIMATION
+# ---------- HERE STARTS ANIMATION DECLARATION -----------
+
+# create the main window (animation support)
+window = np.zeros((510, 1310, 3), dtype="uint8")
+window.fill(100)
+
+# create a viewport (vp2)
+vp3 = np.zeros((500, 1300, 3), dtype="uint8")
+vp3.fill(255)
+
+# show g3;
+# pause;
+frame1 = Animation()
+frame1.add_to_show(g3)
+
+# for i in {{ A, B, D }} <<<
+#     show i [accepting = false];
+# >>>
+# show C, <A,B>, <B,C>, <C,D>;
+# pause;
+frame2 = Animation()
+for i in {'A', 'B', 'D'}:
+    frame2.add_to_show(a3.figures[i].set_type(StateType.NORMAL))
+frame2.add_to_show(a3.figures['C'])
+frame2.add_to_show(a3.figures['<A,B>'])
+frame2.add_to_show(a3.figures['<B,C>'])
+frame2.add_to_show(a3.figures['<C,D>'])
+
+# show E, <C,E>, <E,E>;
+# pause;
+frame3 = Animation()
+frame3.add_to_show(a3.figures['E'])
+frame3.add_to_show(a3.figures['<C,E>'])
+frame3.add_to_show(a3.figures['<E,E>'])
+
+# show <B,B>, <B,A>;
+# pause;
+frame4 = Animation()
+frame4.add_to_show(a3.figures['<B,B>'])
+frame4.add_to_show(a3.figures['<B,A>'])
+
+# show <A,A>, <A,E>, <D,D>, <D,E>, <D,B>;
+# pause;
+frame5 = Animation()
+frame5.add_to_show(a3.figures['<A,A>'])
+frame5.add_to_show(a3.figures['<A,E>'])
+frame5.add_to_show(a3.figures['<D,D>'])
+frame5.add_to_show(a3.figures['<D,E>'])
+frame5.add_to_show(a3.figures['<D,B>'])
+
+# for i in {{ A, B, D }} <<<
+#     show i [accepting = true];
+# >>>
+# pause;
+frame6 = Animation()
+for i in {'A', 'B', 'D'}:
+    frame6.add_to_show(a3.figures[i].set_type(StateType.ACCEPTING))
+
+# And finally sequence:
+sequence = Sequence(vp3, window)
+sequence.add(frame1)
+sequence.add(frame2)
+sequence.add(frame3)
+sequence.add(frame4)
+sequence.add(frame5)
+sequence.add(frame6)
+
+sequence.next_step()
+sequence.next_step()
+sequence.next_step()
+sequence.next_step()
+sequence.next_step()
+sequence.next_step()
