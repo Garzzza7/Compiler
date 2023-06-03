@@ -1,3 +1,4 @@
+import copy
 import cv2 as cv
 import numpy as np
 import math
@@ -90,7 +91,7 @@ class Transition(Showable):
         points = []
         for p in self.arrowPoints:
             p1 = p * SCALE
-            points.append(p1.roundToInt())
+            points.append(p1.round_to_int())
 
         for i, p in enumerate(points[:-2]):
             cv.line(mat, p, points[i + 1], self.strokeColor, self.strokeThickness)
@@ -164,23 +165,20 @@ class State(Showable):
 
     def set_type(self, state_type):
         self.type = state_type
+        return self
 
     def set_position(self, point):
         self.position = point
+        return self
 
     def get_position(self):
         return self.position
 
     def draw(self, mat):
-        # if not visible do nothing
-        if not self.visible:
-            return
-
-        print('  Drawing state ' + self.name)
 
         # determine center and radius in image coordinates
         c = self.position * SCALE
-        center = c.roundToInt()
+        center = c.round_to_int()
         r = int(round(self.radius * SCALE))
 
         # draw state shape
@@ -194,7 +192,7 @@ class State(Showable):
         # draw label
         sz, _ = cv.getTextSize(self.name, cv.FONT_HERSHEY_SIMPLEX, 0.8, self.strokeThickness)
         c = c + Point(-sz[0] / 2, sz[1] / 2)
-        center = c.roundToInt()
+        center = c.round_to_int()
         cv.putText(mat, self.name, center, cv.FONT_HERSHEY_SIMPLEX, 0.8, self.strokeThickness)
 
 
@@ -228,30 +226,35 @@ class Animation:
         self.to_show = []
 
     def add_to_show(self, showable):
-        self.to_show.append(showable)
+        self.to_show.append(copy.deepcopy(showable))
 
-    def show(self):
+    def show(self, mat):
         for showable in self.to_show:
-            showable.show()
+            showable.draw(mat)
 
 
 # --------------------------------------------------------
 
 
 class Sequence:
-    def __init__(self):
+    def __init__(self, mat, win):
         self.animations = []
+        self.mat = mat
+        self.window = win
 
     def add(self, animation):
         self.animations.append(animation)
 
     def next_step(self):
-        self.animations.pop(0).show()
+        self.animations.pop(0).show(self.mat)
+        np.copyto(window[10:, 10:, :], self.mat)
+        cv.imshow('Sequence', self.window)
+        cv.waitKey(0)
 
 
 # --------------------------------------------------------
 
-# -------------- HERE STARTS THE EXAMPLE 1 ---------------
+# ---------------- HERE STARTS EXAMPLE 1 -----------------
 
 a1 = Automaton()
 
@@ -268,3 +271,55 @@ a1.states['B'].set_type(StateType.ACCEPTING)
 # A -> 'a','b','c' -> A;
 a1.add_transition(LineTransition(a1.states['A'], a1.states['B'], {'a', 'b'}))
 a1.add_transition(LoopTransition(a1.states['A'], {'a', 'b', 'c'}))
+
+# I skipped the declaration of a view completely in hope that it will be enough to just define the positions of figures.
+
+# place A at (2,1), B at (5,1);
+a1.states['A'].set_position(Point(2, 1))
+a1.states['B'].set_position(Point(5, 1))
+
+# create the main window (animation support)
+window = np.zeros((510, 510, 3), dtype="uint8")
+window.fill(100)
+
+# create a viewport (vp1)
+vp1 = np.zeros((500, 500, 3), dtype="uint8")
+vp1.fill(255)
+
+# ---------- HERE STARTS ANIMATION DECLARATION -----------
+
+# show A, B [accepting = false];
+# pause;
+frame1 = Animation()
+frame1.add_to_show(a1.states['A'].set_type(StateType.NORMAL))
+frame1.add_to_show(a1.states['B'].set_type(StateType.NORMAL))
+
+# show <A,B>;
+# pause;
+frame2 = Animation()
+frame2.add_to_show(a1.transitions['<A,B>'])
+
+# show <A,A>;
+# pause;
+frame3 = Animation()
+frame3.add_to_show(a1.transitions['<A,A>'])
+
+# show B [accepting = true];
+# pause;
+frame4 = Animation()
+frame4.add_to_show(a1.states['B'].set_type(StateType.ACCEPTING))
+
+# Then all the animations are arranged in a sequence:
+
+sequence = Sequence(vp1, window)
+sequence.add(frame1)
+sequence.add(frame2)
+sequence.add(frame3)
+sequence.add(frame4)
+
+# And then shown:
+
+sequence.next_step()
+sequence.next_step()
+sequence.next_step()
+sequence.next_step()
