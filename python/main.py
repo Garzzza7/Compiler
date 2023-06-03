@@ -36,6 +36,11 @@ class Point:
     def __str__(self):
         return '(' + str(self.x) + ',' + str(self.y) + ')'
 
+    @staticmethod
+    def from_polar(angle, normal):
+        angle = angle * math.pi / 180
+        return Point(math.cos(angle) * normal, math.sin(angle) * normal)
+
     def round_to_int(self):
         return int(round(self.x)), int(round(self.y))
 
@@ -84,6 +89,7 @@ class Transition(Showable):
         super().__init__()
         self.name = name
         self.symbols = symbols
+        self.labelReferencePoint = Point(0, 0)
         self.labelAlignment = Align.CENTERED
         self.arrowPoints = []
 
@@ -156,6 +162,31 @@ class LoopTransition(Transition):
 # --------------------------------------------------------
 
 
+class CustomTransition(Transition):
+    def __init__(self, name, arrow_positions, symbols):
+        super().__init__(name, symbols)
+        self.positions = arrow_positions
+
+        if len(arrow_positions) % 2 != 0:
+            position = arrow_positions[(len(arrow_positions) / 2).__floor__()]
+        else:
+            position = arrow_positions[(len(arrow_positions) / 2).__floor__()] \
+                       + arrow_positions[(len(arrow_positions) / 2).__floor__() + 1]
+
+        position += Point(0, -0.2)
+        self.labelReferencePoint = position
+
+    def draw(self, mat):
+
+        for pos in self.positions:
+            self.arrowPoints.append(pos)
+
+        super().draw(mat)
+
+
+# --------------------------------------------------------
+
+
 class State(Showable):
     def __init__(self, name):
         super().__init__()
@@ -205,10 +236,10 @@ class Automaton:
         self.states = {}
         self.transitions = {}
 
-    def add_state(self, state):
+    def set_state(self, state):
         self.states[state.name] = state
 
-    def add_transition(self, transition):
+    def set_transition(self, transition):
         self.transitions[transition.name] = transition
 
     def draw(self):
@@ -247,79 +278,7 @@ class Sequence:
 
     def next_step(self):
         self.animations.pop(0).show(self.mat)
-        np.copyto(window[10:, 10:, :], self.mat)
+        np.copyto(self.window[10:, 10:, :], self.mat)
         cv.imshow('Sequence', self.window)
         cv.waitKey(0)
 
-
-# --------------------------------------------------------
-
-# ---------------- HERE STARTS EXAMPLE 1 -----------------
-
-a1 = Automaton()
-
-# state A, B;
-a1.add_state(State('A'))
-a1.add_state(State('B'))
-
-# A [initial = true];
-# B [accepting = true];
-a1.states['A'].set_type(StateType.INITIAL)
-a1.states['B'].set_type(StateType.ACCEPTING)
-
-# A -> 'a','b' -> B,
-# A -> 'a','b','c' -> A;
-a1.add_transition(LineTransition(a1.states['A'], a1.states['B'], {'a', 'b'}))
-a1.add_transition(LoopTransition(a1.states['A'], {'a', 'b', 'c'}))
-
-# I skipped the declaration of a view completely in hope that it will be enough to just define the positions of figures.
-
-# place A at (2,1), B at (5,1);
-a1.states['A'].set_position(Point(2, 1))
-a1.states['B'].set_position(Point(5, 1))
-
-# create the main window (animation support)
-window = np.zeros((510, 510, 3), dtype="uint8")
-window.fill(100)
-
-# create a viewport (vp1)
-vp1 = np.zeros((500, 500, 3), dtype="uint8")
-vp1.fill(255)
-
-# ---------- HERE STARTS ANIMATION DECLARATION -----------
-
-# show A, B [accepting = false];
-# pause;
-frame1 = Animation()
-frame1.add_to_show(a1.states['A'].set_type(StateType.NORMAL))
-frame1.add_to_show(a1.states['B'].set_type(StateType.NORMAL))
-
-# show <A,B>;
-# pause;
-frame2 = Animation()
-frame2.add_to_show(a1.transitions['<A,B>'])
-
-# show <A,A>;
-# pause;
-frame3 = Animation()
-frame3.add_to_show(a1.transitions['<A,A>'])
-
-# show B [accepting = true];
-# pause;
-frame4 = Animation()
-frame4.add_to_show(a1.states['B'].set_type(StateType.ACCEPTING))
-
-# Then all the animations are arranged in a sequence:
-
-sequence = Sequence(vp1, window)
-sequence.add(frame1)
-sequence.add(frame2)
-sequence.add(frame3)
-sequence.add(frame4)
-
-# And then shown:
-
-sequence.next_step()
-sequence.next_step()
-sequence.next_step()
-sequence.next_step()
