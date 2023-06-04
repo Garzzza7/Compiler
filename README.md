@@ -1,6 +1,8 @@
 # Topic: **ADV**, group: **adv-05**
 -----
 
+This is the project done by the adv-05 group.
+
 ## Group members and overall individual participation
 
 | NMec | Name | email | Participation |
