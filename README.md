@@ -23,7 +23,7 @@
 
 ## Report
 
-- Use this section to make a succinct but explanatory report of the objectives achieved.
+- All of the minimum requirements have been implemented in the project.
 
 ## Contributions
 
