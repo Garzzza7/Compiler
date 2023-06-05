@@ -3,7 +3,7 @@ import org.stringtemplate.v4.*;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.ParserRuleContext;
 @SuppressWarnings("CheckReturnValue")
-public class Compiler1 extends TestBaseVisitor<ST> {
+public class Compiler2 extends TestBaseVisitor<ST> {
    public boolean validTarget(String target) {
       File f = new File(target+".stg");
 
@@ -27,7 +27,6 @@ public class Compiler1 extends TestBaseVisitor<ST> {
    @Override public ST visitSectorList(TestParser.SectorListContext ctx) {
       ST res = stg.getInstanceOf("stats");
       for(TestParser.SectorContext sc: ctx.sector()){
-         //System.out.println(visit(sc).render());
          res.add("stat", visit(sc));
       }
 
@@ -82,6 +81,7 @@ public class Compiler1 extends TestBaseVisitor<ST> {
       }
       return res;
    }
+
    @Override public ST visitStateCreationID(TestParser.StateCreationIDContext ctx) {
       ST res = stg.getInstanceOf("stateCreation");
       res.add("name",ctx.ID().getText());
@@ -92,14 +92,15 @@ public class Compiler1 extends TestBaseVisitor<ST> {
    @Override public ST visitStateAssignment(TestParser.StateAssignmentContext ctx) {
       ST res = stg.getInstanceOf("stateAssignment");
       //  TestParser.AutomatonContext aut;
-      String op = ctx.role.getText();
-      System.out.println(op);
-      String s1 = ctx.value.getText();
-      String val = " ";
-      if(s1.equals("true")){
-         val="True";
-      }else if(s1.equals("false")){
-         val="False";
+      String role = ctx.role.getText();
+      String value = ctx.value.getText();
+      String val = "";
+      if(value.equals("true") && role.equals("initial")){
+         val="INITIAL";
+      }else if(value.equals("true") && role.equals("accepting")){
+         val="ACCEPTING";
+      }else{
+         val="NORMAL";
       }
       res.add("automata","av");
       res.add("name",ctx.ID().getText());
@@ -121,9 +122,9 @@ public class Compiler1 extends TestBaseVisitor<ST> {
       String s1 = ctx.ID(0).getText();
       String s2 = ctx.ID(1).getText();
       if(s1.equals(s2)){
-          res = stg.getInstanceOf("transitionStatementDiff");
+         res = stg.getInstanceOf("transitionStatementDiff");
       }else{
-          res = stg.getInstanceOf("transitionStatement");
+         res = stg.getInstanceOf("transitionStatement");
       }
       res.add("name1", ctx.ID(0).getText());
       res.add("name2", ctx.ID(1).getText());
@@ -137,7 +138,6 @@ public class Compiler1 extends TestBaseVisitor<ST> {
 
    @Override public ST visitAutomatonType(TestParser.AutomatonTypeContext ctx) {
       ST res = stg.getInstanceOf("automatonType");
-      System.out.println("tutaj");
       res.add("name", ctx.AUTOMATONNAME().getText());
       return res;
       //return res;
@@ -159,7 +159,6 @@ public class Compiler1 extends TestBaseVisitor<ST> {
       return res;
    }
 
-
    @Override public ST visitPointView(TestParser.PointViewContext ctx) {
       ST res = stg.getInstanceOf("stats");
       for(TestParser.PointIDContext sc: ctx.pointID()){
@@ -170,148 +169,238 @@ public class Compiler1 extends TestBaseVisitor<ST> {
 
    @Override public ST visitExpressionView(TestParser.ExpressionViewContext ctx) {
       ST res1 = stg.getInstanceOf("expressionView");
-      System.out.println(visit(ctx.expression()));
       res1.add("var",ctx.ID().getText());
-      res1.add("value",visit(ctx.expression()));
-
+      //for(TestParser.ExpressionContext sc : ctx.expression()){
+      res1.add("value", visit(ctx.expression()).render().trim());
+      //}
+      //res1.add("value",visit(ctx.expression()).render());
       ST res = stg.getInstanceOf("stats");
       res.add("stat",res1);
       return res;
       //return res;
    }
+
    @Override public ST visitPointAmnt(TestParser.PointAmntContext ctx) {
-      ST res = null;
+      ST res = stg.getInstanceOf("stats");
+     // for(TestParser.PointAssignmentContext sc: ctx.pointAssignment()){
+         //res.add("stat", visit(ctx.pointAssignment()));
+      //}
       return visit(ctx.pointAssignment());
-      //return res;
    }
 
    @Override public ST visitPointModificationView1(TestParser.PointModificationView1Context ctx) {
-      ST res = null;
-      return visitChildren(ctx);
-      //return res;
-   }
-
-   @Override public ST visitPointModificationView2(TestParser.PointModificationView2Context ctx) {
-      ST res = null;
-      return visitChildren(ctx);
-      //return res;
-   }
-
-   @Override public ST visitPointModificationView3(TestParser.PointModificationView3Context ctx) {
-      ST res = null;
-      return visitChildren(ctx);
-      //return res;
-   }
-
-   @Override public ST visitGridView(TestParser.GridViewContext ctx) {
-      ST res = null;
-      return visitChildren(ctx);
-      //return res;
-   }
-   @Override public ST visitPointID(TestParser.PointIDContext ctx) {
-      ST res = stg.getInstanceOf("pointView");
-      res.add("name",ctx.ID().getText());
+      ST res = stg.getInstanceOf("pointModificationView1");
+      res.add("symbol1",ctx.ID(0).getText());
+      res.add("symbol2",ctx.ID(1).getText());
+      double inf = Double.POSITIVE_INFINITY;
+      int i = 0;
+      for(TerminalNode sc : ctx.ID()){
+         if(i>=2){
+            res.add("point",sc.getText());
+         }
+         i++;
+      }
+//      for(int i = 2 ; i < inf;i++){
+//         try{
+//            if(ctx.ID(i).getText().equals(" ")){
+//               break;
+//            }
+//            res.add("point",ctx.ID(i).getText());
+//         }catch (Exception e){
+//
+//         }
+//      }
       return res;
       //return res;
    }
 
-   @Override public ST visitAlign(TestParser.AlignContext ctx) {
-      ST res = null;
+   @Override public ST visitPointModificationView2(TestParser.PointModificationView2Context ctx) {
+      ST res = stg.getInstanceOf("pointModificationView2");
+      res.add("symbol1",ctx.ID(0).getText());
+      res.add("symbol2",ctx.ID(1).getText());
+      res.add("align", visit(ctx.align()).render().toUpperCase());
+      res.add("point", ctx.ID(2).getText());
+      return res;
+      //return res;
+   }
+
+   @Override public ST visitPointModificationView3(TestParser.PointModificationView3Context ctx) {
+      ST res = stg.getInstanceOf("pointModificationView3");
+      res.add("symbol1",ctx.ID(0).getText());
+      res.add("symbol2",ctx.ID(1).getText());
+      String s1 = visit(ctx.align()).render().toUpperCase();
+      s1=s1.trim();
+      if(s1.equals("RIGHT") || s1.equals("BELOW RIGHT")){
+         res.add("align", "RIGHT");
+      }else if(s1.equals("LEFT") || s1.equals("BELOW LEFT")){
+         res.add("align", "LEFT");
+      }else{
+         res.add("align", visit(ctx.align()).render().toUpperCase());
+      }
+      return res;
+   }
+
+   @Override public ST visitGridView(TestParser.GridViewContext ctx) {
+      ST res = stg.getInstanceOf("grid");
+      res.add("name",visit(ctx.e1).render().trim());
+      res.add("val1",visit(ctx.e2).render().trim());
+      res.add("val2",visit(ctx.e3).render().trim());
+      res.add("val3",visit(ctx.gridStatement(0)).render().trim());
+      res.add("val4",visit(ctx.gridStatement(1)).render().trim());
+      res.add("r","128");
+      res.add("g","128");
+      res.add("b","128");
+      if(visit(ctx.gridStatement(2)).render().equals("red")){
+         res.add("r","255");
+         res.add("g","0");
+         res.add("b","0");
+      }
+      else if(visit(ctx.gridStatement(2)).render().equals("green")){
+         res.add("r","0");
+         res.add("g","255");
+         res.add("b","0");
+      }
+      else if(visit(ctx.gridStatement(2)).render().equals("blue")){
+         res.add("r","0");
+         res.add("g","0");
+         res.add("b","255");
+      }else if(visit(ctx.gridStatement(2)).render().equals("black")){
+         res.add("r","255");
+         res.add("g","255");
+         res.add("b","255");
+      }
+      res.add("type",visit(ctx.gridStatement(3)).render().trim());
+      return res;
+      //return res;
+   }
+
+   @Override public ST visitPointID(TestParser.PointIDContext ctx) {
+//      ST res = stg.getInstanceOf("pointView");
+//      res.add("name",ctx.ID().getText());
+//      return res;
       return visitChildren(ctx);
+   }
+
+   @Override public ST visitAlign(TestParser.AlignContext ctx) {
+      ST res = stg.getInstanceOf("stats");
+      res.add("stat",ctx.ALIGN().getText());
+      return res;
       //return res;
    }
 
    @Override public ST visitStepValue(TestParser.StepValueContext ctx) {
-      ST res = null;
-      return visitChildren(ctx);
+      ST res = stg.getInstanceOf("stats");
+      res.add("stat",visit(ctx.expression()).render());
+      return res;
       //return res;
    }
 
    @Override public ST visitMarginValue(TestParser.MarginValueContext ctx) {
-      ST res = null;
-      return visitChildren(ctx);
-      //return res;
+      ST res = stg.getInstanceOf("stats");
+      res.add("stat",visit(ctx.expression()).render());
+      return res;
    }
 
    @Override public ST visitColorValue(TestParser.ColorValueContext ctx) {
-      ST res = null;
-      return visitChildren(ctx);
-      //return res;
+      ST res = stg.getInstanceOf("stats");
+      res.add("stat",visit(ctx.color()).render());
+      return res;
    }
 
    @Override public ST visitLineValue(TestParser.LineValueContext ctx) {
-      ST res = null;
-      return visitChildren(ctx);
-      //return res;
+      ST res = stg.getInstanceOf("stats");
+      res.add("stat",visit(ctx.line()).render());
+      return res;
    }
 
    @Override public ST visitColor(TestParser.ColorContext ctx) {
-      ST res = null;
-      return visitChildren(ctx);
-      //return res;
+      ST res = stg.getInstanceOf("stats");
+      res.add("stat",ctx.COLOR().getText());
+      return res;
    }
 
    @Override public ST visitLine(TestParser.LineContext ctx) {
-      ST res = null;
-      return visitChildren(ctx);
-      //return res;
+      ST res = stg.getInstanceOf("stats");
+      res.add("stat",ctx.LINE().getText().toUpperCase());
+      return res;
    }
 
    @Override public ST visitPlaceAssignment(TestParser.PlaceAssignmentContext ctx) {
-      System.out.println("ASDADASDASD");
       ST res = stg.getInstanceOf("placeAssignment");
       res.add("name",ctx.ID().getText());
-      res.add("expr1", visit(ctx.e1).render());
-      res.add("expr2", visit(ctx.e2).render());
+      res.add("expr1", ctx.e1.getText());
+      res.add("expr2", ctx.e2.getText());
+//      res.add("expr1", visit(ctx.e1).render());
+//      res.add("expr2", visit(ctx.e2).render());
       return res;
       //return res;
    }
 
    @Override public ST visitPointAssignment(TestParser.PointAssignmentContext ctx) {
+      ST res = stg.getInstanceOf("pointAssignment");
+      res.add("ID",ctx.ID().getText());
+      res.add("value",visit(ctx.expression()).render().trim());
 
-      ST res = stg.getInstanceOf("assign");
-      String id = ctx.ID().getText();
-      Symbol s = TestParser.symbolTable.get(id);
-      res.add("stat", visit(ctx.e).render());
-      res.add("var", "HEHEHEHE");
-      res.add("value", ctx.e);
-      return res;
+      ST res1 = stg.getInstanceOf("stats");
+      res1.add("stat",res);
+      return res1;
+//      return visitChildren(ctx);
    }
 
    @Override public ST visitColonExpression(TestParser.ColonExpressionContext ctx) {
       ST res1 = stg.getInstanceOf("ColonExpression");
       res1.add("angle", visit(ctx.e1).render());
       res1.add("r", visit(ctx.e2).render());
-      ST res = stg.getInstanceOf("stats");
-      res.add("stat",res1);
-      return res;
+//      ST res = stg.getInstanceOf("stats");
+//      res.add("stat",res1);
+      return res1;
    }
 
    @Override public ST visitParenthesisExpression(TestParser.ParenthesisExpressionContext ctx) {
-      ST res1 = stg.getInstanceOf("ParenthesisExpression");
-      res1.add("symbol",visit(ctx.e).render());
-      ST res = stg.getInstanceOf("stats");
-      res.add("stat",res1);
-
+      ST res1=null;
+      if(visit(ctx.e).render().length()<=2){
+         res1 = stg.getInstanceOf("ParenthesisExpression");
+         res1.add("symbol",visit(ctx.e).render().trim());
+      }else{
+         res1 = stg.getInstanceOf("stats");
+         res1.add("stat","("+visit(ctx.e).render().trim()+")");
+      }
+//      ST res = stg.getInstanceOf("stats");
+//      res.add("stat",res1);
       // ctx.varName = ctx.expression().varName;
-      return res;
+      return res1;
    }
 
    @Override public ST visitIDExpression(TestParser.IDExpressionContext ctx) {
       ST res = stg.getInstanceOf("stats");
-      res.add("stat",ctx.ID().getText());
+      ctx.varName=ctx.ID().getText();
+      res.add("stat",ctx.ID().getText().trim());
       return res;
    }
 
    @Override public ST visitAdditionAndSubtractionExpression(TestParser.AdditionAndSubtractionExpressionContext ctx) {
-      ST res = null;
-      return visitChildren(ctx);
-      //return res;
+//      ST res = stg.getInstanceOf("stats");
+//      for(TestParser.ExpressionContext sc: ctx.expression()){
+//         res.add("stat", visit(sc));
+//      }
+////      for(TestParser.AdditionAndSubtractionExpressionContext sc: ctx.e2()){
+////         res.add("stat", visit(sc));
+////      }
+//      return res;
+      ST res = stg.getInstanceOf("binaryExpression");
+//      res.add("stat", visit(ctx.e1).render());
+//      res.add("stat", visit(ctx.e2).render());
+      res.add("var", ctx.varName);
+      res.add("e1", visit(ctx.e1).render());
+      res.add("op", ctx.op.getText());
+      res.add("e2", visit(ctx.e2).render());
+      return res;
+      //return visitChildren(ctx);
    }
 
    @Override public ST visitFloatExpression(TestParser.FloatExpressionContext ctx) {
       ST res = stg.getInstanceOf("stats");
-      ctx.varName = newVarName();
+     // ctx.varName = newVarName();
       //res.add("var", ctx.varName);
       res.add("stat", ctx.FLOAT().getText());
       return res;
@@ -319,7 +408,7 @@ public class Compiler1 extends TestBaseVisitor<ST> {
 
    @Override public ST visitIntegerExpression(TestParser.IntegerExpressionContext ctx) {
       ST res = stg.getInstanceOf("stats");
-      ctx.varName = newVarName();
+      //ctx.varName = newVarName();
       //res.add("var", ctx.varName);
       res.add("stat", ctx.INTEGER().getText());
       return res;
@@ -327,28 +416,51 @@ public class Compiler1 extends TestBaseVisitor<ST> {
    }
 
    @Override public ST visitComaExpression(TestParser.ComaExpressionContext ctx) {
-      ST res = stg.getInstanceOf("stats");
-      res.add("stat", visit(ctx.e1).render());
-      res.add("stat", visit(ctx.e2).render());
+      ST res = stg.getInstanceOf("point");
+      res.add("val1", visit(ctx.e1).render());
+      res.add("val2", visit(ctx.e2).render());
       return res;
    }
 
    @Override public ST visitSemicolonExpression(TestParser.SemicolonExpressionContext ctx) {
-
-//      ST res1 = stg.getInstanceOf("ColonExpression");
-//      res1.add("angle", visit(ctx.e1).render());
-//      res1.add("r", visit(ctx.e2).render());
-//      ST res = stg.getInstanceOf("stats");
-//      res.add("stat",res1);
-
-      // ctx.varName = ctx.expression().varName;
+      ST res = null;
       return visitChildren(ctx);
+      //return res;
    }
 
    @Override public ST visitDivisionAndMultiplicationExpression(TestParser.DivisionAndMultiplicationExpressionContext ctx) {
-      ctx.varName = "hehe";
-      System.out.println("ASDASDASDASDASD");
-      return binaryExpression(ctx, visit(ctx.e1).render(), visit(ctx.e2).render(), ctx.varName, ctx.e1.varName, ctx.op.getText(), ctx.e2.varName);
+//     ST res = stg.getInstanceOf("stats");
+//      res.add("stat",ctx.e1.getText());
+//      res.add("stat",ctx.op.getText());
+//      res.add("stat",ctx.e2.getText());
+//      ST res1 = stg.getInstanceOf("stats");
+//      res1.add("stat",res);
+
+//      ST res = stg.getInstanceOf("binaryExpression");
+//      res.add("stat", visit(ctx.e1).render());
+//      res.add("stat", visit(ctx.e2).render());
+//      res.add("var", "HEHEHEHE");
+//      res.add("e1", ctx.e1.getText());
+//      res.add("op", ctx.op.getText());
+//      res.add("e2", ctx.e2.getText());
+      //return res;
+      ST res = stg.getInstanceOf("binaryExpression");
+//      res.add("stat", visit(ctx.e1).render());
+//      res.add("stat", visit(ctx.e2).render());
+      res.add("var", ctx.varName);
+      res.add("e1", visit(ctx.e1).render());
+      res.add("op", ctx.op.getText());
+      res.add("e2", visit(ctx.e2).render());
+      return res;
+//      ST res = stg.getInstanceOf("binaryExpression");
+//      res.add("stat", visit(ctx.e1).render());
+//      res.add("stat", visit(ctx.e2).render());
+//      res.add("var", ctx.varName);
+//      res.add("e1", visit(ctx.e1));
+//      res.add("op", ctx.op.getText());
+//      res.add("e2", visit(ctx.e2));
+//      return res;
+    //  return binaryExpression(ctx,visit(ctx.e1).render(),visit(ctx.e2).render(), ctx.varName, ctx.e1.getText(), ctx.op.getText(), ctx.e2.getText());
 
    }
 
@@ -369,15 +481,16 @@ public class Compiler1 extends TestBaseVisitor<ST> {
       ST res = stg.getInstanceOf("stats");
       res.add("stat",visit(ctx.viewport()));
       res.add("stat",visit(ctx.on()));
+
       return res;
    }
 
    @Override public ST visitViewport(TestParser.ViewportContext ctx) {
       ST res = stg.getInstanceOf("viewport");
-      //System.out.println(visit(ctx.expression(0)).render());
       String s1 = "string1";
       String s2 = "string2";
       String s3 = "string3";
+      //counter++;
       res.add("value1",visit(ctx.e3));
       res.add("value2",visit(ctx.e4));
       return res;
@@ -405,6 +518,7 @@ public class Compiler1 extends TestBaseVisitor<ST> {
          res.add("stat", visit(sc));
          limiter++;
       }
+
 //      for(TestParser.OnStatementPauseContext  sc: ctx.onStatementPause()){
 //         res.add("stat", visit(sc));
 //      }
@@ -413,20 +527,32 @@ public class Compiler1 extends TestBaseVisitor<ST> {
 //      }
 
       res.add("stat", visitChildren(ctx));
-     // limiter=0;
+      // limiter=0;
       //res.add("stat", visit(ctx.foreach()));
       return res;
    }
 
    @Override public ST visitOnStatementShow(TestParser.OnStatementShowContext ctx) {
-
+      ST res = null;
+      return visitChildren(ctx);
+      //return res;
+   }
+   @Override public ST visitOnStatementShowGrid(TestParser.OnStatementShowGridContext ctx) {
       return visitChildren(ctx);
    }
 
    @Override public ST visitOnStatementShowID(TestParser.OnStatementShowIDContext ctx) {
-      ST res = stg.getInstanceOf("OnStatementShowID");
+      ST res = null;
+
+      if(ctx.ID().getText().length()==1){
+         res = stg.getInstanceOf("OnStatementShowID");
+      }else{
+         res = stg.getInstanceOf("showGrid");
+         modifier++;
+      }
       res.add("symbol",ctx.ID().getText());
       res.add("counter",counter);
+
       return res;
       //return res;
    }
@@ -461,17 +587,19 @@ public class Compiler1 extends TestBaseVisitor<ST> {
       return res;
       //return res;
    }
+
    @Override public ST visitOnStatementPause(TestParser.OnStatementPauseContext ctx) {
       ST res = stg.getInstanceOf("onPause");
       limiter=0;
       counter++;
       return res;
    }
+
    @Override public ST visitForeach(TestParser.ForeachContext ctx) {
       ST res = stg.getInstanceOf("foreach");
-      res.add("symbol",ctx.SYMBOL().getText());
+      res.add("symbol",ctx.SYMBOL().getText().trim());
       for(TestParser.ExpressionContext  sc: ctx.expression()){
-         res.add("expr", visit(sc));
+         res.add("expr", visit(sc).render().trim());
       }
       for(TestParser.ForeachStatementContext  sc: ctx.foreachStatement()){
          res.add("statement", visit(sc));
@@ -480,44 +608,62 @@ public class Compiler1 extends TestBaseVisitor<ST> {
    }
 
    @Override public ST visitForeachStatement(TestParser.ForeachStatementContext ctx) {
-      ST res = stg.getInstanceOf("foreachStatement");
-      String s1 = ctx.value.getText();
-      String val = " ";
-      if(s1.equals("true")){
-         val="True";
-      }else if(s1.equals("false")){
-         val="False";
+      ST res = null;
+      if(counter==1){
+         res = stg.getInstanceOf("foreachStatement");
+         String role = ctx.role.getText();
+         String value = ctx.value.getText();
+         String val = "";
+         if(value.equals("true") && role.equals("initial")){
+            val="INITIAL";
+         }else if(value.equals("true") && role.equals("accepting")){
+            val="ACCEPTING";
+         }else{
+            val="NORMAL";
+         }
+         res.add("symbol",ctx.SYMBOL().getText());
+         res.add("role",ctx.role.getText());
+         res.add("value",val);
+
+      }else{
+         res = stg.getInstanceOf("foreachStatement1");
+         String role = ctx.role.getText();
+         String value = ctx.value.getText();
+         String val = "";
+         if(value.equals("true") && role.equals("initial")){
+            val="INITIAL";
+         }else if(value.equals("true") && role.equals("accepting")){
+            val="ACCEPTING";
+         }else{
+            val="NORMAL";
+         }
+         res.add("symbol",ctx.SYMBOL().getText());
+         res.add("role",ctx.role.getText());
+         res.add("value",val);
+         res.add("counter",counter);
       }
-      res.add("symbol",ctx.SYMBOL().getText());
-      res.add("role",ctx.role.getText());
-      res.add("value",val);
+
       return res;
       //return res;
    }
 
    @Override public ST visitPlay(TestParser.PlayContext ctx) {
       ST res = stg.getInstanceOf("play");
-      for(int i = 1 ;  i< counter ; i++){
+      if(modifier==0){
+         counter--;
+      }else{
+         counter=counter-modifier;
+      }
+      for(int i = 1 ;  i<= counter ; i++){
          res.add("statement", "sequence.add(frame"+i+")\n");
       }
-      for(int i = 1 ;  i< counter ; i++){
+      for(int i = 1 ;  i<= counter ; i++){
          res.add("statement", "sequence.next_step()\n");
       }
+
       return res;
       //return res;
    }
-   //   protected ST binaryExpression(ParserRuleContext ctx, String e1Stats, String e2Stats, String type, String var, String e1Var, String op, String e2Var) {
-//      ST res = stg.getInstanceOf("binaryExpression");
-//      res.add("stat", e1Stats);
-//      res.add("stat", e2Stats);
-//      res.add("type", type);
-//      res.add("var", var);
-//      res.add("e1", e1Var);
-//      res.add("op", translateOp(op));
-//      res.add("e2", e2Var);
-//      return res;
-//   }
-
    protected ST binaryExpression(ParserRuleContext ctx, String e1Stats, String e2Stats, String var, String e1Var, String op, String e2Var) {
       ST res = stg.getInstanceOf("binaryExpression");
       res.add("stat", e1Stats);
@@ -532,6 +678,7 @@ public class Compiler1 extends TestBaseVisitor<ST> {
       varCount++;
       return "v"+varCount;
    }
+   protected int modifier = 0;
    protected int limiter = 0;
    protected int counter=1;
    protected int varCount = 0;

@@ -1,0 +1,5 @@
+#!/bin/bash
+NUMBER=$1
+COMMAND="antlr4-java -ea TestMain -compiler ../examples/ex0${NUMBER}.adv"
+
+$COMMAND

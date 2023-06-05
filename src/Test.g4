@@ -70,7 +70,7 @@ viewStatement:
     | 'point' pointID (', ' pointID)* ';'                                                               #pointView
     //| ID '=' '(' ID ')' ';'                                                                             #valueView
     | /*'point'?*/ ID '=' expression ';'                                                                #expressionView
-    | pointAssignment                                                                                   #pointView
+    | pointAssignment                                                                                   #pointAmnt
     //| expression
     | '<' ID ',' ID '>' 'as' ID ('--' ID)* ';'                                                          #pointModificationView1
     | 'place' '<' ID ',' ID '>' '#label' '[''align' '=' align ']' 'at' ID';'                            #pointModificationView2
@@ -100,8 +100,8 @@ placeAssignment:
     ;
 
 pointAssignment:
-    e1=expression '=' e2=expression ';'
-    | 'point' e1=expression '=' e2=expression ';'
+    ID '=' e=expression ';'
+    | 'point' ID'=' e=expression ';'
     ;
 
 expression returns[Type eType,String varName]:
@@ -145,6 +145,10 @@ onStatementShow:
     onStatementShowID
     | onStatementShowTransitions
     | onStatementShowIDwithChange
+    | onStatementShowGrid
+;
+onStatementShowGrid:
+        ID
 ;
 onStatementShowID:
        ID

@@ -1,182 +1,5 @@
 module(name,stat) ::= <<
-import cv2 as cv
-import numpy as np
-import math
-from enum import Enum
-
-#--------------------------------------------------------
-
-class Point:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __add__(self, other):
-        return Point(self.x + other.x, self.y + other.y)
-
-    def __sub__(self, other):
-        return Point(self.x - other.x, self.y - other.y)
-
-    def __mul__(self, scalar):
-        return Point(self.x * scalar, self.y * scalar)
-
-    def __truediv__(self, scalar):
-        return Point(self.x / scalar, self.y / scalar)
-
-    def __floordiv__(self, scalar):
-        return Point(self.x // scalar, self.y // scalar)
-
-    def __str__(self):
-        return '(' + str(self.x) + ',' + str(self.y) + ')'
-
-    def roundToInt(self):
-        return (int(round(self.x)), int(round(self.y)))
-
-    def norm(self):
-        return math.sqrt(self.x**2 + self.y**2)
-
-#--------------------------------------------------------
-
-class Align(Enum):
-    CENTERED = 0
-    LEFT = 1
-    RIGHT = 2
-    ABOVE = 3
-    BELOW = 4
-
-#--------------------------------------------------------
-
-class AdvFigure:
-    def __init__(self, key):
-        self.key = key
-        self.referencePoint = Point(0,0)
-        self.visible = False
-        self.strokeColor = (0,0,0)
-        self.strokeThickness = 2
-
-    def draw(self, mat, scaleFrom, scaleTo):
-        pass
-
-#--------------------------------------------------------
-
-class AdvStateFigure(AdvFigure):
-    def __init__(self, key, origin):
-        super().__init__(key)
-        self.accepting = False
-        self.initial = False
-        self.referencePoint = origin
-        self.radius = 0.5
-
-    def draw(self, mat, scaleFrom, scaleTo):
-        # if not visible do nothing
-        if not self.visible:
-            return
-
-        print('  Drawing state ' + self.key)
-
-        # determine center and radius in image coordinates
-        c = self.referencePoint / scaleFrom * scaleTo
-        center = c.roundToInt()
-        r = int(round(self.radius / scaleFrom * scaleTo))
-
-        # draw state shape
-        cv.circle(mat, center, r, self.strokeColor, self.strokeThickness)
-        if self.accepting == True:
-            r2 = int(round(0.8 * self.radius / scaleFrom * scaleTo))
-            cv.circle(mat, center, r2, self.strokeColor, self.strokeThickness)
-        if self.initial == True:
-            pass # ...
-
-        # draw label
-        sz,_ = cv.getTextSize(self.key, cv.FONT_HERSHEY_SIMPLEX, 0.8, self.strokeThickness)
-        c = c + Point(-sz[0]/2, sz[1]/2)
-        center = c.roundToInt()
-        cv.putText(mat, self.key, center, cv.FONT_HERSHEY_SIMPLEX, 0.8, self.strokeThickness)
-
-#--------------------------------------------------------
-
-class AdvTransitionFigure(AdvFigure):
-    def __init__(self, key, label):
-        super().__init__(key)
-        self.label = label
-        self.labelReferencePoint = Point(0,0)
-        self.labelAlignment = Align.CENTERED
-        self.arrowPoints = []
-
-    def draw(self, mat, scaleFrom, scaleTo):
-        # if not visible do nothing
-        if not self.visible:
-            return
-
-        print('  Drawing transition ' + self.key)
-
-        # convert arrow's points to image coordinates
-        points = []
-        for p in self.arrowPoints:
-            p1 = p / scaleFrom * scaleTo
-            points.append(p1.roundToInt())
-
-        print(points)
-        # draw the arrow, assuming there are at least 2 points
-        for i, p in enumerate(points[:-2]):
-            cv.line(mat, p, points[i+1], self.strokeColor, self.strokeThickness)
-        cv.arrowedLine(mat, points[-2], points[-1], self.strokeColor, self.strokeThickness)
-
-#--------------------------------------------------------
-
-class AdvLoopTransitionFigure(AdvTransitionFigure):
-    def __init__(self, key, label, p):
-        super().__init__(key, label)
-
-        # set arrow points
-        p1 = p + Point(-0.2, -0.6)
-        self.arrowPoints.append(p1)
-        p1 = p1 + Point(-0.2, -0.3)
-        self.arrowPoints.append(p1)
-        p1 = p1 + Point(0.8, 0.0)
-        self.arrowPoints.append(p1)
-        p1 = p1 + Point(-0.2, 0.3)
-        self.arrowPoints.append(p1)
-
-        # set label reference point and alignment
-        p1 = p1 + Point(0.2, -0.2)
-        self.labelReferencePoint = p1
-        self.labelAlignment = Align.LEFT;
-
-#--------------------------------------------------------
-
-class AdvLineTransitionFigure(AdvTransitionFigure):
-    def __init__(self, key, label, p1, p2):
-        super().__init__(key, label)
-
-        # set arrow points
-        p21 = p2 - p1
-        d = p21 / p21.norm() * 0.7
-        pa = p1 + d
-        self.arrowPoints.append(pa)
-        pb = p2 -d
-        self.arrowPoints.append(pb)
-
-        # set label reference point and alignment
-        p = (pa + pb) / 2 + Point(0, -0.2)
-        self.labelReferencePoint = p
-        self.labelAlignment = Align.CENTERED;
-
-#--------------------------------------------------------
-
-class AdvAutomatonView:
-    def __init__(self):
-        self.name = ""
-        self.figures = {}
-
-    def addFigure(self, key, figure):
-        self.figures[key] = figure
-
-    def draw(self, mat, scaleFrom, scaleTo):
-        for f in self.figures.values():
-            f.draw(mat, scaleFrom, scaleTo)
-
-#--------------------------------------------------------
+from main import *
 
 <stats(stat)>
 >>
@@ -185,76 +8,108 @@ alphabet(stat,name,value) ::= <<
 <stats(stat)>
 <name> = [ <value; separator=","> ]>>
 viewport(value1,value2) ::= <<
-window = np.zeros((510, 510, 3), dtype="uint8")
+window = np.zeros((<value1>+10, <value2>+10, 3), dtype="uint8")
 window.fill(100)
 vp1 = np.zeros((<value1>, <value2>, 3), dtype="uint8")
 vp1.fill(255)
 >>
 automaton(stat,name) ::= <<
-av = AdvAutomatonView()
+a1 = Automaton()
 <stats(stat)>
 >>
 stateCreation(name) ::= <<
-f = AdvStateFigure('<name>', Point(0.0, 0.0))
-av.addFigure('<name>', f)
+a1.set_state(State('<name>'))
 >>
 stateAssignment(automata,name,state,value) ::= <<
-<automata>.figures['<name>'].<state> = <value>
+a1.figures['<name>'].set_type(StateType.<value>)
 >>
 transitionStatement(name1,name2,symbol) ::= <<
-f = AdvLoopTransitionFigure('\<<name1>,<name2>\>', "'<symbol; separator="', '">", Point(2.0, 1.0))
-av.addFigure('\<<name1>,<name2>\>', f)
+a1.set_transition(LineTransition(a1.figures['<name1>'], a1.figures['<name2>'], ['<symbol; separator="', '">']))
 >>
 transitionStatementDiff(name1,name2,symbol) ::= <<
-f = AdvLineTransitionFigure('\<<name1>,<name2>\>', "'<symbol; separator="', '">", Point(2.0, 1.0), Point(5.0, 1.0))
-av.addFigure('\<<name1>,<name2>\>', f)
+a1.set_transition(LoopTransition(a1.figures['<name1>'], ['<symbol; separator="', '">']))
 >>
 automatonType(name) ::= <<
 automatonName = "<name>"
 >>
 onPause() ::=<<
-av.draw(vp1, 1.0, 50)
-np.copyto(window[10:, 10:, :], vp1)
-cv.imshow(automatonName, window)
-cv.waitKey(0)
+
 >>
-play() ::= <<
-print('----------------------------------------')
-print('The end')
-print('----------------------------------------')
+play(statement) ::= <<
+sequence = Sequence(vp1, window)
+<statement>
 >>
-binaryExpression(stat,type,var,e1,op,e2) ::= <<
+playStatement1(counter) ::= <<
+sequence.add(frame<counter>)
+>>
+playStatement2(statement) ::= <<
+sequence.next_step()
+>>
+binaryExpression(stat,var,e1,op,e2) ::= <<
 <stats(stat)>
-<decl(type,var,[e1," ",op," ",e2])>
+<decl(var,[e1,op,e2])>
 >>
-OnStatementShowID(symbol) ::= <<
-av.figures['<symbol>'].visible = True
+animationDeclaration(counter) ::= <<
+frame<counter> = Animation()
 >>
-OnStatementShowTransitions(symbol) ::= <<
-av.figures['\<<symbol;separator=",">\>'].visible = True
+OnStatementShowID(symbol,counter) ::= <<
+frame<counter>.add_to_show(a1.figures['<symbol>'].set_type(StateType.NORMAL))
 >>
-OnStatementShowIDwithChange(symbol,role,value) ::= <<
-av.figures['<symbol>'].visible = True
-av.figures['<symbol>'].<role> = <value>
+OnStatementShowTransitions(symbol,counter) ::= <<
+frame<counter>.add_to_show(a1.figures['\<<symbol;separator=",">\>'])
 >>
+OnStatementShowIDwithChange(symbol,role,value,counter) ::= <<
+frame<counter>.add_to_show(a1.figures['<symbol>'].set_type(StateType.<value>))
+>>
+showGrid(symbol,counter) ::= <<
+frame<counter>.add_to_show(<symbol>)>>
 foreach(symbol,expr,statement) ::= <<
 for <symbol> in ["<expr;separator="\",\"">"]:
     <statement>
 >>
 foreachStatement(symbol,role,value) ::= <<
-av.figures[<symbol>].<role> = <value>
+a1.figures[<symbol>].set_type(StateType.<value>)
 >>
-decl(var,value) ::= "<var> = <value>;"
+foreachStatement1(symbol,role,value,counter) ::= <<
+frame<counter>.add_to_show(a1.figures[i].set_type(StateType.<value>))
+>>
+
+decl(var1,var2) ::= "<var1>  <var2>"
 test() ::= <<
 HELLO
 >>
 pointView(name) ::= <<
 <name> = Point(0.0,0.0)
 >>
-expressionView(var,value) ::= <<
-<var> = <value>
+point(val1,val2) ::= <<
+Point(<val1>,<val2>)
 >>
+expressionView(var,value) ::= <<<var> = <value> >>
 placeAssignment(name,expr1,expr2) ::= <<
-f = AdvStateFigure('<name>', Point(<expr1>, <expr2>))
-av.addFigure('<name>', f)
+a1.figures['<name>'].set_position(Point(<expr1>, <expr2>))
+>>
+ParenthesisExpression(symbol) ::= <<a1.figures['<symbol>'].get_position()>>
+pointAssignment(stat,ID,value) ::= <<
+<ID> = <value>
+<stats(stat)>
+>>
+ColonExpression(angle,r) ::= <<Point.from_polar(<angle>,<r>)>>
+expression(val1,op,val2) ::= <<<val1> <op> <val2> >>
+pointModificationView1(symbol1,symbol2,point) ::= <<
+a1.set_transition(CustomTransition('\<<symbol1>,<symbol2>\>', [<point;separator=",">], a1.figures['\<<symbol1>,<symbol2>\>'].symbols))
+>>
+pointModificationView2(symbol1,symbol2,point,align) ::= <<
+a1.figures['\<<symbol1>,<symbol2>\>'].labelAlignment = Align.<align>
+a1.figures['\<<symbol1>,<symbol2>\>'].labelReferencePoint = <point>
+>>
+pointModificationView3(symbol1,symbol2,point,align) ::= <<
+a1.figures['\<<symbol1>,<symbol2>\>'].labelAlignment = Align.<align>
+>>
+
+grid(name,val1,val2,val3,val4,r,g,b,type) ::= <<
+<name>=Grid(<val1>, <val2>)
+<name>.set_step(<val3>)
+<name>.set_margin(<val4>)
+<name>.set_color((<r>, <g>, <b>))
+<name>.set_line(LineType.<type>)
 >>

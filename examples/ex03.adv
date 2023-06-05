@@ -118,6 +118,7 @@ animation m3 <<<
     on vp3 <<<
         show g3;
         pause;
+        show A, B, D;
         for i in {{ A, B, D }} <<<
             show i [accepting = false];
         >>>
@@ -129,6 +130,7 @@ animation m3 <<<
         pause;
         show <A,A>, <A,E>, <D,D>, <D,E>, <D,B>;
         pause;
+        show A, B, C;
         for i in {{ A, B, D }} <<<
             show i [accepting = true];
         >>>

@@ -61,14 +61,11 @@ public class TestMain {
          if (parser.getNumberOfSyntaxErrors() == 0) {
             // print LISP-style tree:
             // System.out.println(tree.toStringTree(parser));
-            /*
-            TODO: ADD SEMANTIC ANALYSIS
-             */
-            //CalcSemanticCheck semanticCheck = new CalcSemanticCheck();
-             Compiler1 compiler = new Compiler1();
-            //semanticCheck.visit(tree);
-//            if (!ErrorHandling.error())
-//            {
+            TestSemanticCheck semanticCheck = new TestSemanticCheck();
+             Compiler2 compiler = new Compiler2();
+               semanticCheck.visit(tree);
+               if (!ErrorHandling.error())
+               {
                String[] targets = {"py"};
                for(String target: targets)
                {
@@ -93,7 +90,7 @@ public class TestMain {
                      exit(3);
                   }
                }
-           // }
+             }
          }
       }
       catch(IOException e)
