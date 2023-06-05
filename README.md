@@ -1,31 +1,33 @@
-# Tema **ADV**, grupo **adv-05**
+# Topic: **ADV**, group: **adv-05**
 -----
 
-## Constituição dos grupos e participação individual global
+This is the project done by the adv-05 group.
 
-| NMec | Nome | email | Participação |
+## Group members and overall individual participation
+
+| NMec | Name | email | Participation |
 |:---:|:---|:---|:---:|
 | 116726 | JULIUSZ SZYMAJDA | jszymajda@ua.pt | 0.0% |
 | 116748 | MACIEJ ADAMCZEWSKI | maciejadamczewski@ua.pt | 0.0% |
 | 116718 | MALWINA SCHONHOFER | malwina.schonhofer@ua.pt | 0.0% |
 | 116634 | PIOTR CZAPLA | piotrczapla@ua.pt | 0.0% |
 
-## Estrutura do repositório
+## Folder organization
 
-- **src** - deve conter todo o código fonte do projeto.
+- **src** - all source code should in this folder.
 
-- **doc** -- deve conter toda a documentação adicional a este README.
+- **doc** -- should contain all additional documentation to this README.
 
-- **examples** -- deve conter os exemplos ilustrativos das linguagens criadas.
+- **examples** -- should contain the illustrative examples of the languages created.
 
-    - Estes exemplos devem conter comentários (no formato aceite pelas linguagens),
-      que os tornem auto-explicativos.
+    - These examples should contain comments (in the format accepted by the languages),
+      that make them self-explanatory.
 
-## Relatório
+## Report
 
-- Use esta secção para fazer um relatório sucinto mas explicativo dos objetivos concretizados.
+- All of the minimum requirements have been implemented in the project.
 
-## Contribuições
+## Contributions
 
-- Use esta secção para expôr as contribuições individuais dos vários elementos do grupo e que
-  justificam as participações individuais globais apresentadas no início.
+- Use this section to lay out the individual contributions of the various members of the group and 
+  justify the overall individual contributions presented at the beginning.
